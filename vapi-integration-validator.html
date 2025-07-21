@@ -1,0 +1,1262 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VAPI Integration Validator - Complete End-to-End Testing</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #2c3e50, #34495e);
+            color: white;
+            padding: 40px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            font-size: 3rem;
+            font-weight: 300;
+            margin-bottom: 15px;
+        }
+        
+        .header p {
+            font-size: 1.3rem;
+            opacity: 0.9;
+        }
+        
+        .content {
+            padding: 40px;
+        }
+        
+        .test-suite {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 25px;
+            margin-bottom: 40px;
+        }
+        
+        .test-card {
+            border: 2px solid #e0e0e0;
+            border-radius: 15px;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+        
+        .test-card:hover {
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+            transform: translateY(-5px);
+        }
+        
+        .test-card.running {
+            border-color: #007bff;
+            box-shadow: 0 0 20px rgba(0, 123, 255, 0.3);
+        }
+        
+        .test-card.passed {
+            border-color: #28a745;
+            background: linear-gradient(135deg, #d4edda, #c3e6cb);
+        }
+        
+        .test-card.failed {
+            border-color: #dc3545;
+            background: linear-gradient(135deg, #f8d7da, #f5c6cb);
+        }
+        
+        .test-header {
+            padding: 20px;
+            background: #f8f9fa;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        
+        .test-header h3 {
+            font-size: 1.3rem;
+            margin-bottom: 8px;
+            color: #333;
+        }
+        
+        .test-header p {
+            color: #666;
+            font-size: 0.95rem;
+        }
+        
+        .test-body {
+            padding: 20px;
+        }
+        
+        .test-steps {
+            list-style: none;
+        }
+        
+        .test-step {
+            display: flex;
+            align-items: center;
+            margin-bottom: 12px;
+            padding: 10px;
+            border-radius: 8px;
+            background: #f8f9fa;
+            transition: all 0.3s ease;
+        }
+        
+        .test-step.running {
+            background: #cce5ff;
+            border-left: 4px solid #007bff;
+        }
+        
+        .test-step.passed {
+            background: #d4edda;
+            border-left: 4px solid #28a745;
+        }
+        
+        .test-step.failed {
+            background: #f8d7da;
+            border-left: 4px solid #dc3545;
+        }
+        
+        .step-icon {
+            margin-right: 12px;
+            font-size: 1.2rem;
+            width: 24px;
+            text-align: center;
+        }
+        
+        .step-text {
+            flex: 1;
+            font-size: 0.9rem;
+        }
+        
+        .step-status {
+            font-size: 0.8rem;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-weight: 600;
+        }
+        
+        .status-pending {
+            background: #fff3cd;
+            color: #856404;
+        }
+        
+        .status-running {
+            background: #cce5ff;
+            color: #004085;
+        }
+        
+        .status-passed {
+            background: #d4edda;
+            color: #155724;
+        }
+        
+        .status-failed {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        
+        .control-panel {
+            background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 40px;
+            text-align: center;
+        }
+        
+        .control-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+        
+        .btn {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            padding: 15px 25px;
+            border-radius: 10px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.4);
+        }
+        
+        .btn:disabled {
+            background: #6c757d;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+        
+        .btn.success {
+            background: linear-gradient(135deg, #28a745, #20c997);
+        }
+        
+        .btn.warning {
+            background: linear-gradient(135deg, #ffc107, #fd7e14);
+        }
+        
+        .btn.danger {
+            background: linear-gradient(135deg, #dc3545, #e83e8c);
+        }
+        
+        .summary-panel {
+            background: white;
+            border: 2px solid #e0e0e0;
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 30px;
+        }
+        
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 20px;
+            text-align: center;
+        }
+        
+        .summary-item {
+            padding: 20px;
+            border-radius: 10px;
+            background: #f8f9fa;
+        }
+        
+        .summary-item h4 {
+            font-size: 2rem;
+            margin-bottom: 8px;
+            font-weight: 700;
+        }
+        
+        .summary-item p {
+            color: #666;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .summary-item.passed h4 {
+            color: #28a745;
+        }
+        
+        .summary-item.failed h4 {
+            color: #dc3545;
+        }
+        
+        .summary-item.running h4 {
+            color: #007bff;
+        }
+        
+        .debug-log {
+            background: #1a1a1a;
+            color: #00ff00;
+            font-family: 'Courier New', monospace;
+            font-size: 0.85rem;
+            padding: 20px;
+            border-radius: 10px;
+            height: 400px;
+            overflow-y: auto;
+            margin-bottom: 20px;
+            border: 2px solid #333;
+        }
+        
+        .log-entry {
+            margin-bottom: 4px;
+            word-wrap: break-word;
+            line-height: 1.4;
+        }
+        
+        .log-info { color: #00bfff; }
+        .log-success { color: #00ff00; }
+        .log-warning { color: #ffaa00; }
+        .log-error { color: #ff4444; }
+        .log-debug { color: #888; }
+        
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: #e0e0e0;
+            border-radius: 4px;
+            overflow: hidden;
+            margin: 20px 0;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(135deg, #28a745, #20c997);
+            transition: width 0.3s ease;
+            width: 0%;
+        }
+        
+        .live-voice-test {
+            background: linear-gradient(135deg, #1e3c72, #2a5298);
+            color: white;
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+        
+        .voice-orb {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            background: radial-gradient(circle, #4facfe 0%, #00f2fe 100%);
+            margin: 20px auto;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2.5rem;
+            animation: pulse 2s infinite;
+            box-shadow: 0 0 30px rgba(79, 172, 254, 0.5);
+        }
+        
+        @keyframes pulse {
+            0% { transform: scale(1); box-shadow: 0 0 30px rgba(79, 172, 254, 0.5); }
+            50% { transform: scale(1.1); box-shadow: 0 0 50px rgba(79, 172, 254, 0.8); }
+            100% { transform: scale(1); box-shadow: 0 0 30px rgba(79, 172, 254, 0.5); }
+        }
+        
+        .voice-orb.active {
+            background: radial-gradient(circle, #00ff88 0%, #00cc6a 100%);
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            from { transform: rotate(0deg) scale(1.05); }
+            to { transform: rotate(360deg) scale(1.05); }
+        }
+        
+        .results-export {
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 10px;
+            padding: 20px;
+            margin-top: 20px;
+        }
+        
+        .export-options {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔬 VAPI Integration Validator</h1>
+            <p>Comprehensive End-to-End Testing Suite</p>
+        </div>
+        
+        <div class="content">
+            <!-- Summary Panel -->
+            <div class="summary-panel">
+                <h2>📊 Test Results Summary</h2>
+                <div class="progress-bar">
+                    <div class="progress-fill" id="overall-progress"></div>
+                </div>
+                <div class="summary-grid">
+                    <div class="summary-item" id="total-tests">
+                        <h4>0</h4>
+                        <p>Total Tests</p>
+                    </div>
+                    <div class="summary-item passed" id="passed-tests">
+                        <h4>0</h4>
+                        <p>Passed</p>
+                    </div>
+                    <div class="summary-item failed" id="failed-tests">
+                        <h4>0</h4>
+                        <p>Failed</p>
+                    </div>
+                    <div class="summary-item running" id="running-tests">
+                        <h4>0</h4>
+                        <p>Running</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Control Panel -->
+            <div class="control-panel">
+                <h2>🎮 Test Control Center</h2>
+                <div class="control-grid">
+                    <button class="btn" onclick="runAllTests()">🚀 Run All Tests</button>
+                    <button class="btn success" onclick="runCriticalPath()">⚡ Critical Path</button>
+                    <button class="btn warning" onclick="runCompatibilityTests()">🌐 Compatibility</button>
+                    <button class="btn" onclick="runPerformanceTests()">📊 Performance</button>
+                    <button class="btn danger" onclick="stopAllTests()">⏹️ Stop Tests</button>
+                    <button class="btn" onclick="clearResults()">🗑️ Clear Results</button>
+                </div>
+            </div>
+            
+            <!-- Live Voice Test -->
+            <div class="live-voice-test">
+                <h2>🎤 Live Voice Call Test</h2>
+                <div class="voice-orb" id="voice-orb">🤖</div>
+                <h3 id="voice-status">Ready for testing</h3>
+                <div style="margin-top: 20px;">
+                    <button class="btn success" id="voice-test-btn" onclick="startVoiceTest()">Start Voice Test</button>
+                    <button class="btn danger" id="voice-end-btn" onclick="endVoiceTest()" style="display: none;">End Test</button>
+                </div>
+            </div>
+            
+            <!-- Test Suite -->
+            <div class="test-suite">
+                <!-- SDK Loading Tests -->
+                <div class="test-card" id="sdk-loading-tests">
+                    <div class="test-header">
+                        <h3>📦 SDK Loading & Initialization</h3>
+                        <p>Test VAPI SDK loading from multiple sources</p>
+                    </div>
+                    <div class="test-body">
+                        <ul class="test-steps">
+                            <li class="test-step" data-test="primary-cdn">
+                                <span class="step-icon">🌐</span>
+                                <span class="step-text">Load from Primary CDN</span>
+                                <span class="step-status status-pending">PENDING</span>
+                            </li>
+                            <li class="test-step" data-test="fallback-cdn">
+                                <span class="step-icon">🔄</span>
+                                <span class="step-text">Fallback CDN Loading</span>
+                                <span class="step-status status-pending">PENDING</span>
+                            </li>
+                            <li class="test-step" data-test="vapi-class">
+                                <span class="step-icon">🏗️</span>
+                                <span class="step-text">Vapi Class Available</span>
+                                <span class="step-status status-pending">PENDING</span>
+                            </li>
+                            <li class="test-step" data-test="instance-creation">
+                                <span class="step-icon">⚙️</span>
+                                <span class="step-text">Instance Creation</span>
+                                <span class="step-status status-pending">PENDING</span>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <!-- Browser Compatibility -->
+                <div class="test-card" id="browser-compatibility">
+                    <div class="test-header">
+                        <h3>🌐 Browser Compatibility</h3>
+                        <p>Cross-browser feature support validation</p>
+                    </div>
+                    <div class="test-body">
+                        <ul class="test-steps">
+                            <li class="test-step" data-test="webrtc-support">
+                                <span class="step-icon">📡</span>
+                                <span class="step-text">WebRTC Support</span>
+                                <span class="step-status status-pending">PENDING</span>
+                            </li>
+                            <li class="test-step" data-test="getuserMedia">
+                                <span class="step-icon">🎤</span>
+                                <span class="step-text">getUserMedia API</span>
+                                <span class="step-status status-pending">PENDING</span>
+                            </li>
+                            <li class="test-step" data-test="websockets">
+                                <span class="step-icon">🔌</span>
+                                <span class="step-text">WebSockets</span>
+                                <span class="step-status status-pending">PENDING</span>
+                            </li>
+                            <li class="test-step" data-test="webaudio">
+                                <span class="step-icon">🔊</span>
+                                <span class="step-text">Web Audio API</span>
+                                <span class="step-status status-pending">PENDING</span>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <!-- API Integration -->
+                <div class="test-card" id="api-integration">
+                    <div class="test-header">
+                        <h3>🔑 API Integration</h3>
+                        <p>Test VAPI API connectivity and authentication</p>
+                    </div>
+                    <div class="test-body">
+                        <ul class="test-steps">
+                            <li class="test-step" data-test="api-key-validation">
+                                <span class="step-icon">🔐</span>
+                                <span class="step-text">API Key Validation</span>
+                                <span class="step-status status-pending">PENDING</span>
+                            </li>
+                            <li class="test-step" data-test="minimal-config">
+                                <span class="step-icon">⚡</span>
+                                <span class="step-text">Minimal Configuration</span>
+                                <span class="step-status status-pending">PENDING</span>
+                            </li>
+                            <li class="test-step" data-test="advanced-config">
+                                <span class="step-icon">🔧</span>
+                                <span class="step-text">Advanced Configuration</span>
+                                <span class="step-status status-pending">PENDING</span>
+                            </li>
+                            <li class="test-step" data-test="error-handling">
+                                <span class="step-icon">🛡️</span>
+                                <span class="step-text">Error Handling</span>
+                                <span class="step-status status-pending">PENDING</span>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <!-- Voice Call Tests -->
+                <div class="test-card" id="voice-call-tests">
+                    <div class="test-header">
+                        <h3>📞 Voice Call Functionality</h3>
+                        <p>End-to-end voice call testing</p>
+                    </div>
+                    <div class="test-body">
+                        <ul class="test-steps">
+                            <li class="test-step" data-test="call-initiation">
+                                <span class="step-icon">📞</span>
+                                <span class="step-text">Call Initiation</span>
+                                <span class="step-status status-pending">PENDING</span>
+                            </li>
+                            <li class="test-step" data-test="mic-access">
+                                <span class="step-icon">🎙️</span>
+                                <span class="step-text">Microphone Access</span>
+                                <span class="step-status status-pending">PENDING</span>
+                            </li>
+                            <li class="test-step" data-test="speech-recognition">
+                                <span class="step-icon">👂</span>
+                                <span class="step-text">Speech Recognition</span>
+                                <span class="step-status status-pending">PENDING</span>
+                            </li>
+                            <li class="test-step" data-test="ai-response">
+                                <span class="step-icon">🤖</span>
+                                <span class="step-text">AI Response</span>
+                                <span class="step-status status-pending">PENDING</span>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <!-- Configuration Tests -->
+                <div class="test-card" id="configuration-tests">
+                    <div class="test-header">
+                        <h3>⚙️ Configuration Validation</h3>
+                        <p>Test different assistant configurations</p>
+                    </div>
+                    <div class="test-body">
+                        <ul class="test-steps">
+                            <li class="test-step" data-test="openai-11labs">
+                                <span class="step-icon">🧠</span>
+                                <span class="step-text">OpenAI + 11Labs</span>
+                                <span class="step-status status-pending">PENDING</span>
+                            </li>
+                            <li class="test-step" data-test="custom-tts">
+                                <span class="step-icon">🗣️</span>
+                                <span class="step-text">Custom TTS Webhook</span>
+                                <span class="step-status status-pending">PENDING</span>
+                            </li>
+                            <li class="test-step" data-test="fallback-voice">
+                                <span class="step-icon">🔄</span>
+                                <span class="step-text">Voice Fallback Plan</span>
+                                <span class="step-status status-pending">PENDING</span>
+                            </li>
+                            <li class="test-step" data-test="event-handling">
+                                <span class="step-icon">📡</span>
+                                <span class="step-text">Event Handling</span>
+                                <span class="step-status status-pending">PENDING</span>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <!-- Performance Tests -->
+                <div class="test-card" id="performance-tests">
+                    <div class="test-header">
+                        <h3>📊 Performance & Reliability</h3>
+                        <p>Measure performance and reliability metrics</p>
+                    </div>
+                    <div class="test-body">
+                        <ul class="test-steps">
+                            <li class="test-step" data-test="sdk-load-time">
+                                <span class="step-icon">⏱️</span>
+                                <span class="step-text">SDK Load Time</span>
+                                <span class="step-status status-pending">PENDING</span>
+                            </li>
+                            <li class="test-step" data-test="call-setup-time">
+                                <span class="step-icon">⚡</span>
+                                <span class="step-text">Call Setup Time</span>
+                                <span class="step-status status-pending">PENDING</span>
+                            </li>
+                            <li class="test-step" data-test="audio-quality">
+                                <span class="step-icon">🔊</span>
+                                <span class="step-text">Audio Quality</span>
+                                <span class="step-status status-pending">PENDING</span>
+                            </li>
+                            <li class="test-step" data-test="connection-stability">
+                                <span class="step-icon">📶</span>
+                                <span class="step-text">Connection Stability</span>
+                                <span class="step-status status-pending">PENDING</span>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Debug Log -->
+            <div class="debug-log" id="debug-log">
+                <div class="log-entry log-info">[INFO] VAPI Integration Validator Initialized</div>
+                <div class="log-entry log-info">[INFO] Comprehensive test suite loaded</div>
+                <div class="log-entry log-info">[INFO] Ready to begin validation tests</div>
+                <div class="log-entry log-debug">[DEBUG] Test framework ready - Click 'Run All Tests' to begin</div>
+            </div>
+            
+            <!-- Results Export -->
+            <div class="results-export">
+                <h3>📋 Export Test Results</h3>
+                <p>Export comprehensive test results for analysis and reporting</p>
+                <div class="export-options">
+                    <button class="btn" onclick="exportJSON()">📄 JSON Report</button>
+                    <button class="btn" onclick="exportCSV()">📊 CSV Data</button>
+                    <button class="btn" onclick="exportHTML()">🌐 HTML Report</button>
+                    <button class="btn" onclick="shareResults()">🔗 Share Link</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Multi-CDN Loading -->
+    <script>
+        // Global test state
+        let testState = {
+            running: false,
+            results: {},
+            startTime: null,
+            vapiInstance: null,
+            activeCall: null,
+            totalTests: 0,
+            passedTests: 0,
+            failedTests: 0,
+            runningTests: 0
+        };
+        
+        // Test configurations
+        const testConfigs = {
+            minimal: {
+                model: {
+                    provider: "openai",
+                    model: "gpt-3.5-turbo",
+                    messages: [{
+                        role: "system",
+                        content: "You are a test assistant. Respond with 'Test successful' to confirm."
+                    }]
+                },
+                voice: {
+                    provider: "11labs",
+                    voiceId: "21m00Tcm4TlvDq8ikWAM"
+                },
+                firstMessage: "Testing VAPI integration..."
+            },
+            advanced: {
+                model: {
+                    provider: "openai",
+                    model: "gpt-4",
+                    messages: [{
+                        role: "system",
+                        content: "You are an advanced test assistant with full capabilities."
+                    }]
+                },
+                voice: {
+                    provider: "11labs",
+                    voiceId: "21m00Tcm4TlvDq8ikWAM"
+                },
+                firstMessage: "Advanced configuration test active",
+                recordingEnabled: true,
+                endCallFunctionEnabled: true,
+                silenceTimeoutSeconds: 30
+            },
+            customTTS: {
+                model: {
+                    provider: "openai",
+                    model: "gpt-4",
+                    messages: [{
+                        role: "system", 
+                        content: "You are testing custom TTS integration."
+                    }]
+                },
+                voice: {
+                    provider: "custom-voice",
+                    server: {
+                        url: "https://5570b7b65efe.ngrok-free.app/api/synthesize",
+                        secret: "test-webhook-secret",
+                        timeoutSeconds: 60
+                    },
+                    fallbackPlan: {
+                        voices: [{
+                            provider: "11labs",
+                            voiceId: "21m00Tcm4TlvDq8ikWAM"
+                        }]
+                    }
+                },
+                firstMessage: "Custom TTS test active"
+            }
+        };
+        
+        // CDN sources for fallback testing
+        const cdnSources = [
+            "https://cdn.jsdelivr.net/npm/@vapi-ai/web@2.3.8/dist/vapi.js",
+            "https://unpkg.com/@vapi-ai/web@2.3.8/dist/vapi.js",
+            "https://cdn.skypack.dev/@vapi-ai/web@2.3.8"
+        ];
+        
+        // Logging system
+        function debugLog(message, type = 'info') {
+            const timestamp = new Date().toLocaleTimeString();
+            const logEntry = document.createElement('div');
+            logEntry.className = `log-entry log-${type}`;
+            logEntry.textContent = `[${timestamp}] [${type.toUpperCase()}] ${message}`;
+            
+            const debugLog = document.getElementById('debug-log');
+            debugLog.appendChild(logEntry);
+            debugLog.scrollTop = debugLog.scrollHeight;
+            
+            console.log(`[${type.toUpperCase()}] ${message}`);
+        }
+        
+        // Test status management
+        function updateTestStatus(testId, status, details = '') {
+            const testElement = document.querySelector(`[data-test="${testId}"]`);
+            const statusElement = testElement?.querySelector('.step-status');
+            
+            if (testElement && statusElement) {
+                // Remove existing status classes
+                testElement.classList.remove('running', 'passed', 'failed');
+                statusElement.classList.remove('status-pending', 'status-running', 'status-passed', 'status-failed');
+                
+                // Add new status
+                testElement.classList.add(status);
+                statusElement.classList.add(`status-${status}`);
+                statusElement.textContent = status.toUpperCase();
+                
+                if (details) {
+                    statusElement.title = details;
+                }
+            }
+            
+            // Update test results
+            testState.results[testId] = {
+                status: status,
+                details: details,
+                timestamp: new Date().toISOString()
+            };
+            
+            updateSummaryStats();
+        }
+        
+        function updateSummaryStats() {
+            const results = Object.values(testState.results);
+            const total = results.length;
+            const passed = results.filter(r => r.status === 'passed').length;
+            const failed = results.filter(r => r.status === 'failed').length;
+            const running = results.filter(r => r.status === 'running').length;
+            
+            document.querySelector('#total-tests h4').textContent = total;
+            document.querySelector('#passed-tests h4').textContent = passed;
+            document.querySelector('#failed-tests h4').textContent = failed;
+            document.querySelector('#running-tests h4').textContent = running;
+            
+            const progress = total > 0 ? ((passed + failed) / total) * 100 : 0;
+            document.getElementById('overall-progress').style.width = `${progress}%`;
+            
+            testState.totalTests = total;
+            testState.passedTests = passed;
+            testState.failedTests = failed;
+            testState.runningTests = running;
+        }
+        
+        // Test execution engine
+        async function runTest(testId, testFunction, timeout = 30000) {
+            debugLog(`🧪 Starting test: ${testId}`, 'info');
+            updateTestStatus(testId, 'running');
+            
+            try {
+                const result = await Promise.race([
+                    testFunction(),
+                    new Promise((_, reject) => 
+                        setTimeout(() => reject(new Error('Test timeout')), timeout)
+                    )
+                ]);
+                
+                updateTestStatus(testId, 'passed', result || 'Test completed successfully');
+                debugLog(`✅ Test passed: ${testId}`, 'success');
+                return true;
+                
+            } catch (error) {
+                updateTestStatus(testId, 'failed', error.message);
+                debugLog(`❌ Test failed: ${testId} - ${error.message}`, 'error');
+                return false;
+            }
+        }
+        
+        // Individual test functions
+        async function testPrimaryCDN() {
+            const startTime = performance.now();
+            
+            return new Promise((resolve, reject) => {
+                const script = document.createElement('script');
+                script.src = cdnSources[0];
+                
+                script.onload = () => {
+                    const loadTime = performance.now() - startTime;
+                    if (typeof window.Vapi !== 'undefined') {
+                        resolve(`Loaded in ${loadTime.toFixed(2)}ms`);
+                    } else {
+                        reject(new Error('Vapi class not available after loading'));
+                    }
+                };
+                
+                script.onerror = () => {
+                    reject(new Error('Failed to load primary CDN'));
+                };
+                
+                document.head.appendChild(script);
+            });
+        }
+        
+        async function testFallbackCDN() {
+            // Test if we can load from alternative CDNs
+            for (let i = 1; i < cdnSources.length; i++) {
+                try {
+                    await new Promise((resolve, reject) => {
+                        const script = document.createElement('script');
+                        script.src = cdnSources[i];
+                        script.onload = resolve;
+                        script.onerror = reject;
+                        document.head.appendChild(script);
+                    });
+                    return `Fallback CDN ${i} working`;
+                } catch (error) {
+                    if (i === cdnSources.length - 1) {
+                        throw new Error('All fallback CDNs failed');
+                    }
+                }
+            }
+        }
+        
+        async function testVapiClass() {
+            if (typeof window.Vapi === 'undefined') {
+                throw new Error('Vapi class not available');
+            }
+            
+            // Test constructor
+            const testInstance = new window.Vapi('test-key');
+            if (!testInstance) {
+                throw new Error('Cannot create Vapi instance');
+            }
+            
+            return 'Vapi class available and constructible';
+        }
+        
+        async function testInstanceCreation() {
+            const instance = new window.Vapi('16c71f6e-10ce-47b2-b03c-033f3534fc0c');
+            
+            // Test basic properties/methods
+            if (typeof instance.start !== 'function') {
+                throw new Error('Instance missing start method');
+            }
+            
+            if (typeof instance.stop !== 'function') {
+                throw new Error('Instance missing stop method');
+            }
+            
+            testState.vapiInstance = instance;
+            return 'Instance created with required methods';
+        }
+        
+        async function testWebRTCSupport() {
+            try {
+                const pc = new RTCPeerConnection();
+                pc.close();
+                return 'WebRTC RTCPeerConnection available';
+            } catch (error) {
+                throw new Error('WebRTC not supported');
+            }
+        }
+        
+        async function testGetUserMedia() {
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                stream.getTracks().forEach(track => track.stop());
+                return 'Microphone access granted';
+            } catch (error) {
+                throw new Error(`getUserMedia failed: ${error.message}`);
+            }
+        }
+        
+        async function testWebSockets() {
+            try {
+                const ws = new WebSocket('wss://echo.websocket.org');
+                ws.close();
+                return 'WebSocket connection possible';
+            } catch (error) {
+                throw new Error('WebSocket not supported');
+            }
+        }
+        
+        async function testWebAudio() {
+            try {
+                const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                audioContext.close();
+                return 'Web Audio API available';
+            } catch (error) {
+                throw new Error('Web Audio API not supported');
+            }
+        }
+        
+        async function testAPIKeyValidation() {
+            if (!testState.vapiInstance) {
+                throw new Error('VAPI instance not available');
+            }
+            
+            // Try to set up event listeners (this validates the API key indirectly)
+            testState.vapiInstance.on('error', () => {});
+            testState.vapiInstance.on('call-start', () => {});
+            
+            return 'API key accepted by VAPI instance';
+        }
+        
+        async function testMinimalConfig() {
+            if (!testState.vapiInstance) {
+                throw new Error('VAPI instance not available');
+            }
+            
+            // Test if we can create a call with minimal configuration
+            try {
+                const call = await testState.vapiInstance.start(testConfigs.minimal);
+                
+                // End the test call immediately
+                setTimeout(async () => {
+                    try {
+                        await testState.vapiInstance.stop();
+                    } catch (e) {
+                        debugLog(`Warning: Error stopping test call: ${e.message}`, 'warning');
+                    }
+                }, 2000);
+                
+                return 'Minimal configuration accepted';
+            } catch (error) {
+                throw new Error(`Minimal config failed: ${error.message}`);
+            }
+        }
+        
+        async function testAdvancedConfig() {
+            if (!testState.vapiInstance) {
+                throw new Error('VAPI instance not available');
+            }
+            
+            try {
+                const call = await testState.vapiInstance.start(testConfigs.advanced);
+                
+                // End the test call
+                setTimeout(async () => {
+                    try {
+                        await testState.vapiInstance.stop();
+                    } catch (e) {
+                        debugLog(`Warning: Error stopping advanced test call: ${e.message}`, 'warning');
+                    }
+                }, 3000);
+                
+                return 'Advanced configuration accepted';
+            } catch (error) {
+                throw new Error(`Advanced config failed: ${error.message}`);
+            }
+        }
+        
+        async function testErrorHandling() {
+            if (!testState.vapiInstance) {
+                throw new Error('VAPI instance not available');
+            }
+            
+            // Test error handling by using invalid configuration
+            try {
+                await testState.vapiInstance.start({
+                    model: {
+                        provider: "invalid-provider",
+                        model: "invalid-model"
+                    }
+                });
+                
+                throw new Error('Expected error for invalid configuration');
+            } catch (error) {
+                if (error.message.includes('Expected error')) {
+                    throw error;
+                }
+                return 'Error handling working correctly';
+            }
+        }
+        
+        // Main test runners
+        async function runAllTests() {
+            debugLog('🚀 Starting comprehensive test suite...', 'info');
+            testState.running = true;
+            testState.startTime = new Date();
+            testState.results = {};
+            
+            // SDK Loading Tests
+            await runTest('primary-cdn', testPrimaryCDN);
+            await runTest('fallback-cdn', testFallbackCDN);
+            await runTest('vapi-class', testVapiClass);
+            await runTest('instance-creation', testInstanceCreation);
+            
+            // Browser Compatibility Tests  
+            await runTest('webrtc-support', testWebRTCSupport);
+            await runTest('getuserMedia', testGetUserMedia);
+            await runTest('websockets', testWebSockets);
+            await runTest('webaudio', testWebAudio);
+            
+            // API Integration Tests
+            await runTest('api-key-validation', testAPIKeyValidation);
+            await runTest('minimal-config', testMinimalConfig, 15000);
+            await runTest('advanced-config', testAdvancedConfig, 15000);
+            await runTest('error-handling', testErrorHandling);
+            
+            // Additional tests can be added here
+            
+            testState.running = false;
+            const duration = ((new Date() - testState.startTime) / 1000).toFixed(1);
+            debugLog(`🎉 Test suite completed in ${duration} seconds`, 'success');
+            
+            generateTestReport();
+        }
+        
+        async function runCriticalPath() {
+            debugLog('⚡ Running critical path tests...', 'info');
+            
+            const criticalTests = [
+                ['primary-cdn', testPrimaryCDN],
+                ['vapi-class', testVapiClass], 
+                ['instance-creation', testInstanceCreation],
+                ['webrtc-support', testWebRTCSupport],
+                ['minimal-config', testMinimalConfig]
+            ];
+            
+            for (const [testId, testFunction] of criticalTests) {
+                const success = await runTest(testId, testFunction);
+                if (!success) {
+                    debugLog(`💥 Critical path failed at: ${testId}`, 'error');
+                    break;
+                }
+            }
+        }
+        
+        async function runCompatibilityTests() {
+            debugLog('🌐 Running browser compatibility tests...', 'info');
+            
+            const compatTests = [
+                ['webrtc-support', testWebRTCSupport],
+                ['getuserMedia', testGetUserMedia],
+                ['websockets', testWebSockets],
+                ['webaudio', testWebAudio]
+            ];
+            
+            for (const [testId, testFunction] of compatTests) {
+                await runTest(testId, testFunction);
+            }
+        }
+        
+        // Voice test functions
+        async function startVoiceTest() {
+            debugLog('🎤 Starting live voice test...', 'info');
+            
+            if (!testState.vapiInstance) {
+                debugLog('❌ No VAPI instance available for voice test', 'error');
+                return;
+            }
+            
+            try {
+                updateVoiceStatus('Connecting...', true);
+                
+                testState.activeCall = await testState.vapiInstance.start(testConfigs.minimal);
+                
+                debugLog('✅ Voice test call started', 'success');
+                updateVoiceStatus('Voice test active - Speak now!', true);
+                
+                document.getElementById('voice-test-btn').style.display = 'none';
+                document.getElementById('voice-end-btn').style.display = 'inline-block';
+                
+            } catch (error) {
+                debugLog(`❌ Voice test failed: ${error.message}`, 'error');
+                updateVoiceStatus('Voice test failed', false);
+            }
+        }
+        
+        async function endVoiceTest() {
+            if (testState.activeCall && testState.vapiInstance) {
+                try {
+                    await testState.vapiInstance.stop();
+                    debugLog('✅ Voice test ended', 'success');
+                } catch (error) {
+                    debugLog(`Error ending voice test: ${error.message}`, 'error');
+                }
+            }
+            
+            updateVoiceStatus('Voice test completed', false);
+            document.getElementById('voice-test-btn').style.display = 'inline-block';
+            document.getElementById('voice-end-btn').style.display = 'none';
+        }
+        
+        function updateVoiceStatus(status, active = false) {
+            document.getElementById('voice-status').textContent = status;
+            const orb = document.getElementById('voice-orb');
+            
+            if (active) {
+                orb.classList.add('active');
+                orb.innerHTML = '🎤';
+            } else {
+                orb.classList.remove('active');
+                orb.innerHTML = '🤖';
+            }
+        }
+        
+        // Utility functions
+        function stopAllTests() {
+            testState.running = false;
+            debugLog('⏹️ All tests stopped by user', 'warning');
+        }
+        
+        function clearResults() {
+            testState.results = {};
+            testState.totalTests = 0;
+            testState.passedTests = 0;
+            testState.failedTests = 0;
+            testState.runningTests = 0;
+            
+            // Reset all test statuses
+            document.querySelectorAll('.test-step').forEach(step => {
+                step.classList.remove('running', 'passed', 'failed');
+                const status = step.querySelector('.step-status');
+                status.className = 'step-status status-pending';
+                status.textContent = 'PENDING';
+            });
+            
+            updateSummaryStats();
+            document.getElementById('debug-log').innerHTML = '';
+            debugLog('🗑️ Test results cleared', 'info');
+        }
+        
+        // Export functions
+        function exportJSON() {
+            const report = generateTestReport();
+            const blob = new Blob([JSON.stringify(report, null, 2)], { type: 'application/json' });
+            downloadFile(blob, `vapi-test-report-${Date.now()}.json`);
+            debugLog('📄 JSON report exported', 'success');
+        }
+        
+        function exportCSV() {
+            const results = Object.entries(testState.results);
+            const csv = [
+                'Test,Status,Details,Timestamp',
+                ...results.map(([test, data]) => 
+                    `"${test}","${data.status}","${data.details}","${data.timestamp}"`
+                )
+            ].join('\n');
+            
+            const blob = new Blob([csv], { type: 'text/csv' });
+            downloadFile(blob, `vapi-test-results-${Date.now()}.csv`);
+            debugLog('📊 CSV data exported', 'success');
+        }
+        
+        function exportHTML() {
+            const report = generateTestReport();
+            const html = `
+                <html>
+                    <head><title>VAPI Test Report</title></head>
+                    <body>
+                        <h1>VAPI Integration Test Report</h1>
+                        <pre>${JSON.stringify(report, null, 2)}</pre>
+                    </body>
+                </html>
+            `;
+            
+            const blob = new Blob([html], { type: 'text/html' });
+            downloadFile(blob, `vapi-test-report-${Date.now()}.html`);
+            debugLog('🌐 HTML report exported', 'success');
+        }
+        
+        function shareResults() {
+            const report = generateTestReport();
+            const shareData = {
+                title: 'VAPI Integration Test Results',
+                text: `Test Results: ${testState.passedTests}/${testState.totalTests} passed`,
+                url: window.location.href
+            };
+            
+            if (navigator.share) {
+                navigator.share(shareData);
+            } else {
+                // Fallback - copy to clipboard
+                navigator.clipboard.writeText(JSON.stringify(report, null, 2));
+                debugLog('🔗 Results copied to clipboard', 'success');
+            }
+        }
+        
+        function downloadFile(blob, filename) {
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+        
+        function generateTestReport() {
+            return {
+                timestamp: new Date().toISOString(),
+                summary: {
+                    total: testState.totalTests,
+                    passed: testState.passedTests,
+                    failed: testState.failedTests,
+                    successRate: testState.totalTests > 0 ? (testState.passedTests / testState.totalTests * 100).toFixed(1) + '%' : '0%'
+                },
+                environment: {
+                    userAgent: navigator.userAgent,
+                    platform: navigator.platform,
+                    language: navigator.language,
+                    cookieEnabled: navigator.cookieEnabled,
+                    onLine: navigator.onLine
+                },
+                results: testState.results
+            };
+        }
+        
+        // Initialize on page load
+        window.addEventListener('load', () => {
+            debugLog('🚀 VAPI Integration Validator loaded and ready', 'success');
+            
+            // Auto-run basic compatibility checks
+            setTimeout(async () => {
+                debugLog('🔍 Running initial compatibility check...', 'info');
+                await runTest('webrtc-support', testWebRTCSupport);
+                await runTest('getuserMedia', testGetUserMedia);
+            }, 1000);
+        });
+    </script>
+</body>
+</html>

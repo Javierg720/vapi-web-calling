@@ -1,0 +1,624 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VAPI Web SDK - Alternative Script Tag Method</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1e3c72, #2a5298);
+            margin: 0;
+            padding: 20px;
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            margin: 0;
+            font-size: 2.2rem;
+            font-weight: 300;
+        }
+        
+        .header p {
+            margin: 10px 0 0 0;
+            opacity: 0.9;
+        }
+        
+        .content {
+            padding: 30px;
+        }
+        
+        .status-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+        
+        .status-card {
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            border-left: 4px solid;
+        }
+        
+        .status-card.success {
+            background: #d4edda;
+            border-left-color: #28a745;
+            color: #155724;
+        }
+        
+        .status-card.warning {
+            background: #fff3cd;
+            border-left-color: #ffc107;
+            color: #856404;
+        }
+        
+        .status-card.error {
+            background: #f8d7da;
+            border-left-color: #dc3545;
+            color: #721c24;
+        }
+        
+        .status-card.info {
+            background: #d1ecf1;
+            border-left-color: #17a2b8;
+            color: #0c5460;
+        }
+        
+        .controls {
+            text-align: center;
+            margin: 30px 0;
+        }
+        
+        .btn {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 8px;
+            font-size: 1rem;
+            cursor: pointer;
+            margin: 0 10px;
+            transition: all 0.3s ease;
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+        }
+        
+        .btn:disabled {
+            background: #6c757d;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .btn.success {
+            background: linear-gradient(135deg, #28a745, #20c997);
+        }
+        
+        .btn.danger {
+            background: linear-gradient(135deg, #dc3545, #e83e8c);
+        }
+        
+        .voice-interface {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 25px;
+            margin: 20px 0;
+            text-align: center;
+        }
+        
+        .voice-orb {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            margin: 15px auto;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); opacity: 0.8; }
+            50% { transform: scale(1.1); opacity: 1; }
+        }
+        
+        .voice-orb.active {
+            background: linear-gradient(135deg, #28a745, #20c997);
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+        
+        .log {
+            background: #1a1a1a;
+            color: #00ff00;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+            padding: 20px;
+            border-radius: 8px;
+            height: 300px;
+            overflow-y: auto;
+            margin-top: 20px;
+        }
+        
+        .log-entry {
+            margin-bottom: 3px;
+        }
+        
+        .log-info { color: #00bfff; }
+        .log-success { color: #00ff00; }
+        .log-warning { color: #ffaa00; }
+        .log-error { color: #ff4444; }
+        
+        .conversation {
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            max-height: 200px;
+            overflow-y: auto;
+            padding: 15px;
+            margin-top: 15px;
+        }
+        
+        .message {
+            margin-bottom: 10px;
+            padding: 8px 12px;
+            border-radius: 15px;
+            max-width: 80%;
+        }
+        
+        .message.user {
+            background: #007bff;
+            color: white;
+            margin-left: auto;
+            text-align: right;
+        }
+        
+        .message.assistant {
+            background: #f1f3f4;
+            color: #333;
+        }
+        
+        .message.system {
+            background: #fff3cd;
+            color: #856404;
+            text-align: center;
+            margin: 0 auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🌐 VAPI Alternative Script Tag</h1>
+            <p>Official HTML Script Tag Integration Method</p>
+        </div>
+        
+        <div class="content">
+            <!-- Status Grid -->
+            <div class="status-grid">
+                <div class="status-card info" id="sdk-status">
+                    <h3>📦 SDK Status</h3>
+                    <p id="sdk-text">Loading...</p>
+                </div>
+                <div class="status-card info" id="init-status">
+                    <h3>🔧 Initialization</h3>
+                    <p id="init-text">Pending</p>
+                </div>
+                <div class="status-card info" id="call-status">
+                    <h3>📞 Call Status</h3>
+                    <p id="call-text">Ready</p>
+                </div>
+            </div>
+            
+            <!-- Controls -->
+            <div class="controls">
+                <button class="btn" onclick="initializeVapi()">🔧 Initialize VAPI</button>
+                <button class="btn success" id="start-btn" onclick="startCall()" disabled>🎤 Start Call</button>
+                <button class="btn danger" id="end-btn" onclick="endCall()" disabled style="display: none;">📞 End Call</button>
+            </div>
+            
+            <!-- Voice Interface -->
+            <div class="voice-interface">
+                <div class="voice-orb" id="voice-orb">🤖</div>
+                <h3 id="voice-status">Ready to initialize VAPI...</h3>
+                
+                <div class="conversation" id="conversation">
+                    <div class="message system">Conversation will appear here...</div>
+                </div>
+            </div>
+            
+            <!-- Debug Log -->
+            <div class="log" id="debug-log">
+                <div class="log-entry log-info">[INFO] VAPI Alternative Script Tag Method initialized</div>
+                <div class="log-entry log-info">[INFO] Using official VAPI HTML script tag integration</div>
+                <div class="log-entry log-info">[INFO] Ready for SDK loading...</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- VAPI HTML Script Tag Integration -->
+    <script>
+        // Global variables
+        let vapiInstance = null;
+        let isInitialized = false;
+        let activeCall = null;
+        
+        // Configuration
+        const apiKey = "16c71f6e-10ce-47b2-b03c-033f3534fc0c"; // Public key for testing
+        
+        // Logging system
+        function debugLog(message, type = 'info') {
+            const timestamp = new Date().toLocaleTimeString();
+            const logEntry = document.createElement('div');
+            logEntry.className = `log-entry log-${type}`;
+            logEntry.textContent = `[${timestamp}] [${type.toUpperCase()}] ${message}`;
+            
+            const debugLog = document.getElementById('debug-log');
+            debugLog.appendChild(logEntry);
+            debugLog.scrollTop = debugLog.scrollHeight;
+            
+            console.log(`[${type.toUpperCase()}] ${message}`);
+        }
+        
+        // Status updates
+        function updateStatus(cardId, text, type) {
+            const card = document.getElementById(cardId);
+            const textEl = document.getElementById(cardId.replace('-status', '-text'));
+            
+            card.className = `status-card ${type}`;
+            textEl.textContent = text;
+        }
+        
+        function updateVoiceStatus(text, state = 'idle') {
+            document.getElementById('voice-status').textContent = text;
+            const orb = document.getElementById('voice-orb');
+            
+            if (state === 'active') {
+                orb.className = 'voice-orb active';
+                orb.innerHTML = '🎤';
+            } else {
+                orb.className = 'voice-orb';
+                orb.innerHTML = '🤖';
+            }
+        }
+        
+        // Message handling
+        function addMessage(content, type) {
+            const conversation = document.getElementById('conversation');
+            const message = document.createElement('div');
+            message.className = `message ${type}`;
+            
+            if (type === 'system') {
+                message.textContent = content;
+            } else {
+                const time = new Date().toLocaleTimeString();
+                const label = type === 'user' ? 'You' : 'Assistant';
+                message.innerHTML = `<strong>${label}</strong> <small>${time}</small><br>${content}`;
+            }
+            
+            // Clear initial message
+            if (conversation.innerHTML.includes('Conversation will appear here...')) {
+                conversation.innerHTML = '';
+            }
+            
+            conversation.appendChild(message);
+            conversation.scrollTop = conversation.scrollHeight;
+        }
+        
+        // Initialize VAPI using HTML Script Tag method
+        function initializeVapi() {
+            debugLog('🔧 Initializing VAPI using HTML script tag method...', 'info');
+            updateStatus('init-status', 'Loading SDK...', 'warning');
+            
+            // Load VAPI SDK using the official HTML script tag method
+            (function (d, t) {
+                debugLog('Creating dynamic script element...', 'debug');
+                
+                var g = document.createElement(t),
+                    s = d.getElementsByTagName(t)[0];
+                
+                // Use the official VAPI HTML script tag URL
+                g.src = "https://cdn.jsdelivr.net/gh/VapiAI/html-script-tag@latest/dist/assets/index.js";
+                g.defer = true;
+                g.async = true;
+                s.parentNode.insertBefore(g, s);
+                
+                g.onload = function () {
+                    debugLog('✅ VAPI SDK loaded successfully!', 'success');
+                    updateStatus('sdk-status', 'Loaded', 'success');
+                    
+                    // Initialize VAPI instance
+                    if (window.vapiSDK) {
+                        debugLog('Initializing VAPI instance...', 'info');
+                        
+                        try {
+                            vapiInstance = window.vapiSDK.run({
+                                apiKey: apiKey,
+                                config: {
+                                    model: {
+                                        provider: "openai",
+                                        model: "gpt-3.5-turbo",
+                                        messages: [
+                                            {
+                                                role: "system",
+                                                content: "You are a helpful voice assistant. Keep responses short and conversational."
+                                            }
+                                        ]
+                                    },
+                                    voice: {
+                                        provider: "11labs",
+                                        voiceId: "21m00Tcm4TlvDq8ikWAM"
+                                    },
+                                    firstMessage: "Hello! I'm your voice assistant. How can I help you today?"
+                                },
+                                onSpeechStart: function() {
+                                    debugLog('🎤 User started speaking', 'info');
+                                    updateVoiceStatus('Listening...', 'active');
+                                },
+                                onSpeechEnd: function() {
+                                    debugLog('🧠 Processing speech...', 'info');
+                                    updateVoiceStatus('Thinking...');
+                                },
+                                onCallStart: function() {
+                                    debugLog('📞 Call started', 'success');
+                                    updateStatus('call-status', 'Active', 'success');
+                                    updateVoiceStatus('Call active - Say something!', 'active');
+                                    addMessage('Call started successfully!', 'system');
+                                    
+                                    document.getElementById('start-btn').style.display = 'none';
+                                    document.getElementById('end-btn').style.display = 'inline-block';
+                                    document.getElementById('end-btn').disabled = false;
+                                },
+                                onCallEnd: function() {
+                                    debugLog('📞 Call ended', 'info');
+                                    updateStatus('call-status', 'Ready', 'info');
+                                    updateVoiceStatus('Call ended');
+                                    addMessage('Call ended', 'system');
+                                    
+                                    document.getElementById('start-btn').style.display = 'inline-block';
+                                    document.getElementById('end-btn').style.display = 'none';
+                                    document.getElementById('start-btn').disabled = false;
+                                },
+                                onMessage: function(message) {
+                                    debugLog(`📨 Message: ${message.type}`, 'debug');
+                                    
+                                    if (message.type === 'transcript' && message.transcriptType === 'final') {
+                                        addMessage(message.transcript, 'user');
+                                    } else if (message.type === 'conversation-update') {
+                                        if (message.conversation && message.conversation.length > 0) {
+                                            const lastMessage = message.conversation[message.conversation.length - 1];
+                                            if (lastMessage.role === 'assistant') {
+                                                addMessage(lastMessage.content, 'assistant');
+                                                updateVoiceStatus('Speaking...');
+                                            }
+                                        }
+                                    }
+                                },
+                                onError: function(error) {
+                                    debugLog(`❌ Error: ${error.message}`, 'error');
+                                    updateStatus('call-status', 'Error', 'error');
+                                    updateVoiceStatus(`Error: ${error.message}`);
+                                    addMessage(`Error: ${error.message}`, 'system');
+                                }
+                            });
+                            
+                            isInitialized = true;
+                            debugLog('✅ VAPI initialized successfully!', 'success');
+                            updateStatus('init-status', 'Ready', 'success');
+                            updateVoiceStatus('VAPI ready - Click Start Call');
+                            
+                            document.getElementById('start-btn').disabled = false;
+                            
+                        } catch (error) {
+                            debugLog(`❌ VAPI initialization failed: ${error.message}`, 'error');
+                            updateStatus('init-status', 'Failed', 'error');
+                            updateVoiceStatus('Initialization failed');
+                        }
+                    } else {
+                        debugLog('❌ window.vapiSDK not available', 'error');
+                        updateStatus('sdk-status', 'SDK Error', 'error');
+                        updateStatus('init-status', 'Failed', 'error');
+                    }
+                };
+                
+                g.onerror = function() {
+                    debugLog('❌ Failed to load VAPI SDK', 'error');
+                    updateStatus('sdk-status', 'Load Failed', 'error');
+                    updateStatus('init-status', 'Failed', 'error');
+                    updateVoiceStatus('SDK loading failed');
+                    
+                    // Fallback to CDN method
+                    debugLog('🔄 Trying fallback CDN method...', 'warning');
+                    loadFallbackSDK();
+                };
+                
+            })(document, "script");
+        }
+        
+        // Fallback SDK loading
+        async function loadFallbackSDK() {
+            debugLog('Loading fallback SDK from CDN...', 'info');
+            
+            try {
+                const script = document.createElement('script');
+                script.src = 'https://cdn.jsdelivr.net/npm/@vapi-ai/web@2.3.8/dist/vapi.js';
+                
+                await new Promise((resolve, reject) => {
+                    script.onload = resolve;
+                    script.onerror = reject;
+                    document.head.appendChild(script);
+                });
+                
+                if (typeof window.Vapi !== 'undefined') {
+                    debugLog('✅ Fallback SDK loaded!', 'success');
+                    updateStatus('sdk-status', 'Fallback Loaded', 'warning');
+                    
+                    // Initialize with standard Web SDK
+                    vapiInstance = new window.Vapi(apiKey);
+                    setupStandardEventListeners();
+                    
+                    isInitialized = true;
+                    updateStatus('init-status', 'Fallback Ready', 'warning');
+                    updateVoiceStatus('Fallback SDK ready');
+                    document.getElementById('start-btn').disabled = false;
+                }
+                
+            } catch (error) {
+                debugLog(`❌ Fallback SDK also failed: ${error.message}`, 'error');
+                updateStatus('sdk-status', 'All Failed', 'error');
+                updateStatus('init-status', 'Complete Failure', 'error');
+            }
+        }
+        
+        // Standard event listeners for fallback
+        function setupStandardEventListeners() {
+            if (!vapiInstance) return;
+            
+            vapiInstance.on('call-start', () => {
+                debugLog('📞 Call started (fallback)', 'success');
+                updateStatus('call-status', 'Active', 'success');
+                updateVoiceStatus('Call active (fallback)', 'active');
+                addMessage('Call started with fallback SDK', 'system');
+                
+                document.getElementById('start-btn').style.display = 'none';
+                document.getElementById('end-btn').style.display = 'inline-block';
+                document.getElementById('end-btn').disabled = false;
+            });
+            
+            vapiInstance.on('call-end', () => {
+                debugLog('📞 Call ended (fallback)', 'info');
+                updateStatus('call-status', 'Ready', 'info');
+                updateVoiceStatus('Ready');
+                
+                document.getElementById('start-btn').style.display = 'inline-block';
+                document.getElementById('end-btn').style.display = 'none';
+            });
+            
+            vapiInstance.on('error', (error) => {
+                debugLog(`❌ Fallback error: ${error.message}`, 'error');
+                updateVoiceStatus(`Error: ${error.message}`);
+            });
+            
+            vapiInstance.on('message', (message) => {
+                debugLog(`📨 Fallback message: ${message.type}`, 'debug');
+                
+                if (message.type === 'transcript' && message.transcriptType === 'final') {
+                    addMessage(message.transcript, 'user');
+                } else if (message.type === 'conversation-update') {
+                    if (message.conversation && message.conversation.length > 0) {
+                        const lastMessage = message.conversation[message.conversation.length - 1];
+                        if (lastMessage.role === 'assistant') {
+                            addMessage(lastMessage.content, 'assistant');
+                        }
+                    }
+                }
+            });
+        }
+        
+        // Start call
+        async function startCall() {
+            if (!isInitialized || !vapiInstance) {
+                debugLog('❌ VAPI not initialized', 'error');
+                return;
+            }
+            
+            debugLog('🎤 Starting voice call...', 'info');
+            updateVoiceStatus('Starting call...');
+            
+            try {
+                // Check if it's the HTML script tag instance
+                if (vapiInstance.startCall) {
+                    // HTML script tag method
+                    activeCall = await vapiInstance.startCall();
+                } else {
+                    // Standard Web SDK method
+                    activeCall = await vapiInstance.start({
+                        model: {
+                            provider: "openai",
+                            model: "gpt-3.5-turbo",
+                            messages: [{
+                                role: "system",
+                                content: "You are a helpful voice assistant. Keep responses short."
+                            }]
+                        },
+                        voice: {
+                            provider: "11labs",
+                            voiceId: "21m00Tcm4TlvDq8ikWAM"
+                        },
+                        firstMessage: "Hello! How can I help you?"
+                    });
+                }
+                
+                debugLog('✅ Call started successfully', 'success');
+                
+            } catch (error) {
+                debugLog(`❌ Failed to start call: ${error.message}`, 'error');
+                updateVoiceStatus('Call start failed');
+                updateStatus('call-status', 'Start Failed', 'error');
+            }
+        }
+        
+        // End call
+        async function endCall() {
+            if (!activeCall || !vapiInstance) {
+                debugLog('❌ No active call to end', 'warning');
+                return;
+            }
+            
+            debugLog('📞 Ending call...', 'info');
+            
+            try {
+                if (vapiInstance.endCall) {
+                    // HTML script tag method
+                    await vapiInstance.endCall();
+                } else {
+                    // Standard Web SDK method
+                    await vapiInstance.stop();
+                }
+                
+                debugLog('✅ Call ended successfully', 'success');
+                activeCall = null;
+                
+            } catch (error) {
+                debugLog(`❌ Error ending call: ${error.message}`, 'error');
+            }
+        }
+        
+        // Auto-initialize on page load
+        window.addEventListener('load', () => {
+            debugLog('🚀 Page loaded - Auto-initializing VAPI...', 'info');
+            
+            // Wait a moment then auto-initialize
+            setTimeout(() => {
+                initializeVapi();
+            }, 1000);
+        });
+    </script>
+</body>
+</html>

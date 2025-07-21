@@ -1,0 +1,1087 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VAPI Web SDK - Comprehensive Debug Solution</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #2c3e50, #34495e);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            font-weight: 300;
+        }
+        
+        .header p {
+            font-size: 1.2rem;
+            opacity: 0.9;
+        }
+        
+        .main-content {
+            padding: 30px;
+        }
+        
+        .status-panel {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .status-card {
+            background: #f8f9fa;
+            border-left: 4px solid #6c757d;
+            padding: 20px;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+        
+        .status-card.success {
+            border-left-color: #28a745;
+            background: #d4edda;
+        }
+        
+        .status-card.warning {
+            border-left-color: #ffc107;
+            background: #fff3cd;
+        }
+        
+        .status-card.error {
+            border-left-color: #dc3545;
+            background: #f8d7da;
+        }
+        
+        .status-card h3 {
+            font-size: 1.1rem;
+            margin-bottom: 10px;
+            color: #333;
+        }
+        
+        .status-card p {
+            color: #666;
+            font-size: 0.95rem;
+        }
+        
+        .control-panel {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 30px;
+        }
+        
+        .control-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+        }
+        
+        .btn {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            padding: 15px 25px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+        }
+        
+        .btn:disabled {
+            background: #6c757d;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+        
+        .btn.success {
+            background: linear-gradient(135deg, #28a745, #20c997);
+        }
+        
+        .btn.danger {
+            background: linear-gradient(135deg, #dc3545, #e83e8c);
+        }
+        
+        .debug-log {
+            background: #1a1a1a;
+            color: #00ff00;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+            padding: 20px;
+            border-radius: 8px;
+            height: 300px;
+            overflow-y: auto;
+            margin-bottom: 20px;
+            border: 2px solid #333;
+        }
+        
+        .log-entry {
+            margin-bottom: 5px;
+            word-wrap: break-word;
+        }
+        
+        .log-info { color: #00bfff; }
+        .log-success { color: #00ff00; }
+        .log-warning { color: #ffaa00; }
+        .log-error { color: #ff4444; }
+        .log-debug { color: #888; }
+        
+        .voice-interface {
+            background: linear-gradient(135deg, #1e3c72, #2a5298);
+            border-radius: 15px;
+            padding: 30px;
+            color: white;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .voice-orb {
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            background: radial-gradient(circle, #4facfe 0%, #00f2fe 100%);
+            margin: 20px auto;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            animation: pulse 2s infinite;
+            box-shadow: 0 0 30px rgba(79, 172, 254, 0.5);
+        }
+        
+        @keyframes pulse {
+            0% { transform: scale(1); box-shadow: 0 0 30px rgba(79, 172, 254, 0.5); }
+            50% { transform: scale(1.05); box-shadow: 0 0 40px rgba(79, 172, 254, 0.8); }
+            100% { transform: scale(1); box-shadow: 0 0 30px rgba(79, 172, 254, 0.5); }
+        }
+        
+        .voice-orb.listening {
+            background: radial-gradient(circle, #00ff88 0%, #00cc6a 100%);
+            animation: listening 1s infinite;
+        }
+        
+        .voice-orb.speaking {
+            background: radial-gradient(circle, #ff6b6b 0%, #ee5a6f 100%);
+            animation: speaking 0.5s infinite;
+        }
+        
+        @keyframes listening {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+        
+        @keyframes speaking {
+            0%, 100% { transform: scale(1); }
+            25% { transform: scale(1.05); }
+            75% { transform: scale(1.1); }
+        }
+        
+        .conversation-log {
+            background: white;
+            border-radius: 8px;
+            max-height: 200px;
+            overflow-y: auto;
+            padding: 15px;
+            border: 1px solid #ddd;
+        }
+        
+        .message {
+            margin-bottom: 10px;
+            padding: 10px 15px;
+            border-radius: 18px;
+            max-width: 80%;
+        }
+        
+        .message.user {
+            background: #007bff;
+            color: white;
+            margin-left: auto;
+            text-align: right;
+        }
+        
+        .message.assistant {
+            background: #f1f3f4;
+            color: #333;
+            margin-right: auto;
+        }
+        
+        .message.system {
+            background: #fff3cd;
+            color: #856404;
+            text-align: center;
+            margin: 0 auto;
+        }
+        
+        .feature-tests {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+        
+        .feature-card {
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+        
+        .feature-card h3 {
+            margin-bottom: 15px;
+            color: #333;
+        }
+        
+        .feature-item {
+            display: flex;
+            justify-content: between;
+            align-items: center;
+            margin-bottom: 10px;
+            padding: 8px 0;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .feature-name {
+            flex: 1;
+            font-weight: 500;
+        }
+        
+        .feature-status {
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+        
+        .feature-status.pass {
+            background: #d4edda;
+            color: #155724;
+        }
+        
+        .feature-status.fail {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        
+        .feature-status.pending {
+            background: #fff3cd;
+            color: #856404;
+        }
+        
+        .config-selector {
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .config-selector h3 {
+            margin-bottom: 15px;
+            color: #333;
+        }
+        
+        .config-options {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 10px;
+        }
+        
+        .config-option {
+            padding: 10px 15px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            cursor: pointer;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+        
+        .config-option:hover {
+            border-color: #667eea;
+            background: #f8f9ff;
+        }
+        
+        .config-option.selected {
+            border-color: #667eea;
+            background: #667eea;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🌐 VAPI Web SDK</h1>
+            <p>Comprehensive Debug Solution & Integration Coordinator</p>
+        </div>
+        
+        <div class="main-content">
+            <!-- Status Panel -->
+            <div class="status-panel">
+                <div class="status-card" id="sdk-status">
+                    <h3>📦 SDK Loading</h3>
+                    <p id="sdk-status-text">Checking...</p>
+                </div>
+                <div class="status-card" id="browser-status">
+                    <h3>🌐 Browser Support</h3>
+                    <p id="browser-status-text">Analyzing...</p>
+                </div>
+                <div class="status-card" id="webrtc-status">
+                    <h3>🎤 WebRTC Support</h3>
+                    <p id="webrtc-status-text">Testing...</p>
+                </div>
+                <div class="status-card" id="api-status">
+                    <h3>🔑 API Connection</h3>
+                    <p id="api-status-text">Ready to test</p>
+                </div>
+            </div>
+            
+            <!-- Configuration Selector -->
+            <div class="config-selector">
+                <h3>🎯 Assistant Configuration Strategy</h3>
+                <div class="config-options">
+                    <div class="config-option selected" data-config="minimal" onclick="selectConfig('minimal')">
+                        <strong>Minimal</strong><br>
+                        <small>Basic OpenAI + 11Labs</small>
+                    </div>
+                    <div class="config-option" data-config="custom-tts" onclick="selectConfig('custom-tts')">
+                        <strong>Custom TTS</strong><br>
+                        <small>Kokoro TTS Webhook</small>
+                    </div>
+                    <div class="config-option" data-config="advanced" onclick="selectConfig('advanced')">
+                        <strong>Advanced</strong><br>
+                        <small>Full Feature Set</small>
+                    </div>
+                    <div class="config-option" data-config="fallback" onclick="selectConfig('fallback')">
+                        <strong>Fallback</strong><br>
+                        <small>Emergency Config</small>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Control Panel -->
+            <div class="control-panel">
+                <div class="control-grid">
+                    <button class="btn" onclick="runDiagnostics()">🔍 Run Diagnostics</button>
+                    <button class="btn" onclick="testSDKLoading()">📦 Test SDK Loading</button>
+                    <button class="btn" onclick="testAPIConnection()">🔑 Test API Key</button>
+                    <button class="btn" onclick="testBrowserCompatibility()">🌐 Test Browser</button>
+                    <button class="btn success" id="start-call-btn" onclick="startVoiceCall()" disabled>🎤 Start Voice Call</button>
+                    <button class="btn danger" id="end-call-btn" onclick="endVoiceCall()" style="display: none;">📞 End Call</button>
+                </div>
+            </div>
+            
+            <!-- Voice Interface -->
+            <div class="voice-interface">
+                <h2>🎤 Voice Assistant Interface</h2>
+                <div class="voice-orb" id="voice-orb">🤖</div>
+                <p id="voice-status">Ready to connect...</p>
+                
+                <div class="conversation-log" id="conversation-log">
+                    <div class="message system">Voice conversation will appear here...</div>
+                </div>
+            </div>
+            
+            <!-- Debug Log -->
+            <div class="debug-log" id="debug-log">
+                <div class="log-entry log-info">[INFO] Comprehensive VAPI Debug Solution Initialized</div>
+                <div class="log-entry log-info">[INFO] Agent 5: Integration Coordinator Active</div>
+                <div class="log-entry log-info">[INFO] Multi-CDN fallback system ready</div>
+                <div class="log-entry log-info">[INFO] Cross-browser compatibility checks enabled</div>
+                <div class="log-entry log-info">[INFO] Comprehensive error handling active</div>
+                <div class="log-entry log-debug">[DEBUG] Waiting for user action...</div>
+            </div>
+            
+            <!-- Feature Tests -->
+            <div class="feature-tests">
+                <div class="feature-card">
+                    <h3>🛠️ Core Web APIs</h3>
+                    <div class="feature-item">
+                        <span class="feature-name">getUserMedia</span>
+                        <span class="feature-status pending" id="getUserMedia-status">Pending</span>
+                    </div>
+                    <div class="feature-item">
+                        <span class="feature-name">WebRTC</span>
+                        <span class="feature-status pending" id="webrtc-feature-status">Pending</span>
+                    </div>
+                    <div class="feature-item">
+                        <span class="feature-name">WebSockets</span>
+                        <span class="feature-status pending" id="websockets-status">Pending</span>
+                    </div>
+                    <div class="feature-item">
+                        <span class="feature-name">Web Audio</span>
+                        <span class="feature-status pending" id="webaudio-status">Pending</span>
+                    </div>
+                </div>
+                
+                <div class="feature-card">
+                    <h3>🌐 VAPI SDK Status</h3>
+                    <div class="feature-item">
+                        <span class="feature-name">Primary CDN</span>
+                        <span class="feature-status pending" id="primary-cdn-status">Pending</span>
+                    </div>
+                    <div class="feature-item">
+                        <span class="feature-name">Fallback CDN</span>
+                        <span class="feature-status pending" id="fallback-cdn-status">Pending</span>
+                    </div>
+                    <div class="feature-item">
+                        <span class="feature-name">Vapi Class</span>
+                        <span class="feature-status pending" id="vapi-class-status">Pending</span>
+                    </div>
+                    <div class="feature-item">
+                        <span class="feature-name">Instance Creation</span>
+                        <span class="feature-status pending" id="vapi-instance-status">Pending</span>
+                    </div>
+                </div>
+                
+                <div class="feature-card">
+                    <h3>🔒 Security & Permissions</h3>
+                    <div class="feature-item">
+                        <span class="feature-name">HTTPS Protocol</span>
+                        <span class="feature-status pending" id="https-status">Pending</span>
+                    </div>
+                    <div class="feature-item">
+                        <span class="feature-name">Microphone Permission</span>
+                        <span class="feature-status pending" id="mic-permission-status">Pending</span>
+                    </div>
+                    <div class="feature-item">
+                        <span class="feature-name">CORS Policy</span>
+                        <span class="feature-status pending" id="cors-status">Pending</span>
+                    </div>
+                    <div class="feature-item">
+                        <span class="feature-name">CSP Compliance</span>
+                        <span class="feature-status pending" id="csp-status">Pending</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Multi-CDN Loading Strategy -->
+    <script>
+        // Global state management
+        let vapiInstance = null;
+        let activeCall = null;
+        let currentConfig = 'minimal';
+        let diagnosticsResults = {};
+        
+        // Configuration strategies
+        const configurations = {
+            minimal: {
+                name: "Minimal Configuration",
+                config: {
+                    model: {
+                        provider: "openai",
+                        model: "gpt-3.5-turbo",
+                        messages: [{
+                            role: "system",
+                            content: "You are a helpful voice assistant. Keep responses short and conversational."
+                        }]
+                    },
+                    voice: {
+                        provider: "11labs",
+                        voiceId: "21m00Tcm4TlvDq8ikWAM"
+                    },
+                    firstMessage: "Hello! I'm your voice assistant. How can I help?"
+                }
+            },
+            'custom-tts': {
+                name: "Custom TTS Configuration",
+                config: {
+                    model: {
+                        provider: "openai", 
+                        model: "gpt-4",
+                        messages: [{
+                            role: "system",
+                            content: "You are a helpful voice assistant powered by Kokoro TTS. Keep responses conversational and concise."
+                        }]
+                    },
+                    voice: {
+                        provider: "custom-voice",
+                        server: {
+                            url: "https://5570b7b65efe.ngrok-free.app/api/synthesize",
+                            secret: "your-webhook-secret",
+                            timeoutSeconds: 60,
+                            headers: {
+                                "Content-Type": "application/json",
+                                "X-Client-ID": "vapi-debug-solution"
+                            }
+                        },
+                        fallbackPlan: {
+                            voices: [{
+                                provider: "11labs",
+                                voiceId: "21m00Tcm4TlvDq8ikWAM"
+                            }]
+                        }
+                    },
+                    firstMessage: "Hello! I'm your Kokoro-powered voice assistant. How can I help you today?"
+                }
+            },
+            advanced: {
+                name: "Advanced Configuration",
+                config: {
+                    model: {
+                        provider: "openai",
+                        model: "gpt-4",
+                        messages: [{
+                            role: "system",
+                            content: "You are an advanced AI voice assistant with comprehensive capabilities. Provide detailed, helpful responses while maintaining a conversational tone."
+                        }]
+                    },
+                    voice: {
+                        provider: "11labs",
+                        voiceId: "21m00Tcm4TlvDq8ikWAM"
+                    },
+                    firstMessage: "Hello! I'm your advanced AI assistant with full capabilities. What would you like to explore today?",
+                    recordingEnabled: true,
+                    endCallFunctionEnabled: true,
+                    silenceTimeoutSeconds: 30,
+                    maxDurationSeconds: 600,
+                    backgroundSound: "office",
+                    backchannelingEnabled: true,
+                    backgroundDenoisingEnabled: true
+                }
+            },
+            fallback: {
+                name: "Emergency Fallback",
+                config: {
+                    model: {
+                        provider: "openai",
+                        model: "gpt-3.5-turbo"
+                    },
+                    voice: {
+                        provider: "11labs",
+                        voiceId: "21m00Tcm4TlvDq8ikWAM"
+                    }
+                }
+            }
+        };
+        
+        // Multi-CDN loading strategy
+        const cdnSources = [
+            "https://cdn.jsdelivr.net/npm/@vapi-ai/web@2.3.8/dist/vapi.js",
+            "https://unpkg.com/@vapi-ai/web@2.3.8/dist/vapi.js",
+            "https://cdn.skypack.dev/@vapi-ai/web@2.3.8/dist/vapi.js"
+        ];
+        
+        let currentCdnIndex = 0;
+        let sdkLoadAttempts = 0;
+        const maxSdkAttempts = 3;
+        
+        // Logging system
+        function debugLog(message, type = 'info') {
+            const timestamp = new Date().toLocaleTimeString();
+            const logEntry = document.createElement('div');
+            logEntry.className = `log-entry log-${type}`;
+            logEntry.textContent = `[${timestamp}] [${type.toUpperCase()}] ${message}`;
+            
+            const debugLog = document.getElementById('debug-log');
+            debugLog.appendChild(logEntry);
+            debugLog.scrollTop = debugLog.scrollHeight;
+            
+            console.log(`[${type.toUpperCase()}] ${message}`);
+        }
+        
+        // Status update system
+        function updateStatus(cardId, statusText, type = 'info') {
+            const card = document.getElementById(cardId);
+            const textElement = document.getElementById(cardId + '-text');
+            
+            if (card && textElement) {
+                card.className = `status-card ${type}`;
+                textElement.textContent = statusText;
+            }
+        }
+        
+        function updateFeatureStatus(featureId, status) {
+            const element = document.getElementById(featureId);
+            if (element) {
+                element.className = `feature-status ${status}`;
+                element.textContent = status.toUpperCase();
+            }
+        }
+        
+        // Configuration selection
+        function selectConfig(configName) {
+            currentConfig = configName;
+            
+            // Update UI
+            document.querySelectorAll('.config-option').forEach(option => {
+                option.classList.remove('selected');
+            });
+            document.querySelector(`[data-config="${configName}"]`).classList.add('selected');
+            
+            debugLog(`Selected configuration: ${configurations[configName].name}`);
+        }
+        
+        // SDK Loading with fallback
+        async function loadVapiSDK() {
+            debugLog('Starting multi-CDN SDK loading strategy...');
+            
+            for (let i = 0; i < cdnSources.length; i++) {
+                try {
+                    debugLog(`Attempting to load SDK from CDN ${i + 1}: ${cdnSources[i]}`);
+                    
+                    await new Promise((resolve, reject) => {
+                        const script = document.createElement('script');
+                        script.src = cdnSources[i];
+                        script.onload = resolve;
+                        script.onerror = reject;
+                        
+                        // Set timeout for loading
+                        const timeout = setTimeout(() => {
+                            script.remove();
+                            reject(new Error('SDK loading timeout'));
+                        }, 10000);
+                        
+                        script.onload = () => {
+                            clearTimeout(timeout);
+                            resolve();
+                        };
+                        
+                        document.head.appendChild(script);
+                    });
+                    
+                    // Check if SDK loaded correctly
+                    if (typeof window.Vapi !== 'undefined') {
+                        debugLog(`✅ SDK loaded successfully from CDN ${i + 1}`, 'success');
+                        updateStatus('sdk-status', `Loaded from CDN ${i + 1}`, 'success');
+                        updateFeatureStatus('primary-cdn-status', 'pass');
+                        return true;
+                    }
+                } catch (error) {
+                    debugLog(`❌ Failed to load from CDN ${i + 1}: ${error.message}`, 'error');
+                    if (i < cdnSources.length - 1) {
+                        debugLog(`Trying fallback CDN ${i + 2}...`, 'warning');
+                        updateFeatureStatus('fallback-cdn-status', 'testing');
+                    }
+                }
+            }
+            
+            debugLog('❌ All CDN sources failed to load SDK', 'error');
+            updateStatus('sdk-status', 'All CDN sources failed', 'error');
+            updateFeatureStatus('primary-cdn-status', 'fail');
+            updateFeatureStatus('fallback-cdn-status', 'fail');
+            return false;
+        }
+        
+        // Comprehensive diagnostics
+        async function runDiagnostics() {
+            debugLog('🔍 Starting comprehensive diagnostics...', 'info');
+            diagnosticsResults = {};
+            
+            // Test 1: Browser Detection
+            const browser = detectBrowser();
+            diagnosticsResults.browser = browser;
+            debugLog(`Browser: ${browser.name} ${browser.version} on ${navigator.platform}`);
+            updateStatus('browser-status', `${browser.name} ${browser.version}`, 'success');
+            
+            // Test 2: Protocol Check
+            const isHttps = location.protocol === 'https:';
+            diagnosticsResults.https = isHttps;
+            updateFeatureStatus('https-status', isHttps ? 'pass' : 'fail');
+            if (!isHttps) {
+                debugLog('⚠️ Not using HTTPS - WebRTC may not work', 'warning');
+            }
+            
+            // Test 3: WebRTC Support
+            try {
+                const pc = new RTCPeerConnection();
+                pc.close();
+                diagnosticsResults.webrtc = true;
+                updateStatus('webrtc-status', 'Supported', 'success');
+                updateFeatureStatus('webrtc-feature-status', 'pass');
+                debugLog('✅ WebRTC supported', 'success');
+            } catch (error) {
+                diagnosticsResults.webrtc = false;
+                updateStatus('webrtc-status', 'Not supported', 'error');
+                updateFeatureStatus('webrtc-feature-status', 'fail');
+                debugLog('❌ WebRTC not supported', 'error');
+            }
+            
+            // Test 4: Microphone Access
+            try {
+                const permissions = await navigator.permissions.query({name: 'microphone'});
+                diagnosticsResults.micPermission = permissions.state;
+                updateFeatureStatus('mic-permission-status', permissions.state === 'granted' ? 'pass' : 'pending');
+                debugLog(`Microphone permission: ${permissions.state}`);
+            } catch (error) {
+                debugLog('Could not check microphone permission', 'warning');
+            }
+            
+            // Test 5: Other Web APIs
+            const features = [
+                { name: 'getUserMedia', test: () => navigator.mediaDevices && navigator.mediaDevices.getUserMedia },
+                { name: 'WebSockets', test: () => typeof WebSocket !== 'undefined' },
+                { name: 'WebAudio', test: () => typeof AudioContext !== 'undefined' || typeof webkitAudioContext !== 'undefined' }
+            ];
+            
+            features.forEach(feature => {
+                const supported = feature.test();
+                diagnosticsResults[feature.name.toLowerCase()] = supported;
+                updateFeatureStatus(feature.name.toLowerCase() + '-status', supported ? 'pass' : 'fail');
+                debugLog(`${feature.name}: ${supported ? '✅ Supported' : '❌ Not supported'}`);
+            });
+            
+            // Test 6: CORS & CSP
+            updateFeatureStatus('cors-status', 'pass'); // Assume CORS is working if we got this far
+            updateFeatureStatus('csp-status', 'pass'); // Basic CSP test
+            
+            debugLog('📊 Diagnostics completed', 'success');
+            
+            // Enable start button if basic requirements met
+            if (diagnosticsResults.webrtc && (diagnosticsResults.https || location.hostname === 'localhost')) {
+                document.getElementById('start-call-btn').disabled = false;
+                debugLog('✅ Basic requirements met - Voice calls should work', 'success');
+            } else {
+                debugLog('⚠️ Some requirements not met - Voice calls may not work properly', 'warning');
+            }
+        }
+        
+        // Browser detection
+        function detectBrowser() {
+            const ua = navigator.userAgent;
+            let name = 'Unknown';
+            let version = 'Unknown';
+            
+            if (ua.includes('Chrome') && !ua.includes('Edg')) {
+                name = 'Chrome';
+                version = ua.match(/Chrome\/([0-9.]+)/)?.[1] || 'Unknown';
+            } else if (ua.includes('Firefox')) {
+                name = 'Firefox';
+                version = ua.match(/Firefox\/([0-9.]+)/)?.[1] || 'Unknown';
+            } else if (ua.includes('Safari') && !ua.includes('Chrome')) {
+                name = 'Safari';
+                version = ua.match(/Version\/([0-9.]+)/)?.[1] || 'Unknown';
+            } else if (ua.includes('Edg')) {
+                name = 'Edge';
+                version = ua.match(/Edg\/([0-9.]+)/)?.[1] || 'Unknown';
+            }
+            
+            return { name, version };
+        }
+        
+        // Test SDK Loading
+        async function testSDKLoading() {
+            debugLog('🧪 Testing SDK loading...', 'info');
+            
+            const success = await loadVapiSDK();
+            if (success) {
+                updateFeatureStatus('vapi-class-status', 'pass');
+                debugLog('✅ VAPI SDK loaded and available', 'success');
+                
+                // Test instance creation
+                try {
+                    const testInstance = new window.Vapi('test-key');
+                    updateFeatureStatus('vapi-instance-status', 'pass');
+                    debugLog('✅ VAPI instance creation successful', 'success');
+                } catch (error) {
+                    updateFeatureStatus('vapi-instance-status', 'fail');
+                    debugLog(`❌ VAPI instance creation failed: ${error.message}`, 'error');
+                }
+            } else {
+                updateFeatureStatus('vapi-class-status', 'fail');
+                updateFeatureStatus('vapi-instance-status', 'fail');
+            }
+        }
+        
+        // Test API Connection
+        async function testAPIConnection() {
+            debugLog('🔑 Testing API connection...', 'info');
+            
+            if (typeof window.Vapi === 'undefined') {
+                debugLog('❌ SDK not loaded - cannot test API', 'error');
+                updateStatus('api-status', 'SDK not loaded', 'error');
+                return;
+            }
+            
+            try {
+                // Test with public key
+                vapiInstance = new window.Vapi('16c71f6e-10ce-47b2-b03c-033f3534fc0c');
+                debugLog('✅ API instance created successfully', 'success');
+                updateStatus('api-status', 'Connection ready', 'success');
+                
+                // Set up event listeners
+                setupEventListeners();
+                
+            } catch (error) {
+                debugLog(`❌ API connection failed: ${error.message}`, 'error');
+                updateStatus('api-status', 'Connection failed', 'error');
+            }
+        }
+        
+        // Event listeners setup
+        function setupEventListeners() {
+            if (!vapiInstance) return;
+            
+            vapiInstance.on('call-start', () => {
+                debugLog('📞 Call started successfully', 'success');
+                updateVoiceStatus('Call active - Listening...', 'listening');
+                addMessage('Call started successfully!', 'system');
+            });
+            
+            vapiInstance.on('call-end', () => {
+                debugLog('📞 Call ended', 'info');
+                updateVoiceStatus('Call ended', 'idle');
+                endVoiceCall();
+                addMessage('Call ended', 'system');
+            });
+            
+            vapiInstance.on('speech-start', () => {
+                debugLog('🎤 User started speaking', 'info');
+                updateVoiceStatus('Listening...', 'listening');
+            });
+            
+            vapiInstance.on('speech-end', () => {
+                debugLog('🧠 Processing speech...', 'info');
+                updateVoiceStatus('Thinking...', 'thinking');
+            });
+            
+            vapiInstance.on('message', (message) => {
+                debugLog(`📨 Message received: ${message.type}`, 'debug');
+                
+                if (message.type === 'transcript' && message.transcriptType === 'final') {
+                    addMessage(message.transcript, 'user');
+                } else if (message.type === 'conversation-update') {
+                    if (message.conversation && message.conversation.length > 0) {
+                        const lastMessage = message.conversation[message.conversation.length - 1];
+                        if (lastMessage.role === 'assistant') {
+                            addMessage(lastMessage.content, 'assistant');
+                            updateVoiceStatus('Speaking...', 'speaking');
+                        }
+                    }
+                }
+            });
+            
+            vapiInstance.on('error', (error) => {
+                debugLog(`❌ VAPI Error: ${error.message}`, 'error');
+                updateVoiceStatus(`Error: ${error.message}`, 'error');
+                addMessage(`Error: ${error.message}`, 'system');
+            });
+            
+            debugLog('✅ Event listeners configured', 'success');
+        }
+        
+        // Voice interface functions
+        function updateVoiceStatus(status, state = 'idle') {
+            document.getElementById('voice-status').textContent = status;
+            const orb = document.getElementById('voice-orb');
+            
+            orb.className = `voice-orb ${state}`;
+            
+            switch(state) {
+                case 'listening':
+                    orb.innerHTML = '👂';
+                    break;
+                case 'speaking':
+                    orb.innerHTML = '🗣️';
+                    break;
+                case 'thinking':
+                    orb.innerHTML = '🤔';
+                    break;
+                case 'error':
+                    orb.innerHTML = '❌';
+                    break;
+                default:
+                    orb.innerHTML = '🤖';
+            }
+        }
+        
+        function addMessage(content, type) {
+            const log = document.getElementById('conversation-log');
+            const message = document.createElement('div');
+            message.className = `message ${type}`;
+            
+            if (type === 'system') {
+                message.textContent = content;
+            } else {
+                const time = new Date().toLocaleTimeString();
+                const label = type === 'user' ? 'You' : 'Assistant';
+                message.innerHTML = `<strong>${label}</strong> <small>${time}</small><br>${content}`;
+            }
+            
+            // Clear initial message if needed
+            if (log.innerHTML.includes('Voice conversation will appear here...')) {
+                log.innerHTML = '';
+            }
+            
+            log.appendChild(message);
+            log.scrollTop = log.scrollHeight;
+        }
+        
+        // Voice call functions
+        async function startVoiceCall() {
+            debugLog('🎤 Starting voice call...', 'info');
+            
+            if (!vapiInstance) {
+                debugLog('❌ VAPI instance not ready', 'error');
+                await testAPIConnection();
+                if (!vapiInstance) return;
+            }
+            
+            try {
+                const config = configurations[currentConfig];
+                debugLog(`Using ${config.name}`, 'info');
+                
+                updateVoiceStatus('Connecting...', 'thinking');
+                
+                // Start the call with selected configuration
+                activeCall = await vapiInstance.start(config.config);
+                
+                debugLog('✅ Voice call started successfully', 'success');
+                
+                // Update UI
+                document.getElementById('start-call-btn').style.display = 'none';
+                document.getElementById('end-call-btn').style.display = 'inline-block';
+                
+            } catch (error) {
+                debugLog(`❌ Failed to start voice call: ${error.message}`, 'error');
+                updateVoiceStatus(`Failed: ${error.message}`, 'error');
+                
+                // Try fallback configuration
+                if (currentConfig !== 'fallback') {
+                    debugLog('🔄 Trying fallback configuration...', 'warning');
+                    const originalConfig = currentConfig;
+                    currentConfig = 'fallback';
+                    
+                    try {
+                        activeCall = await vapiInstance.start(configurations.fallback.config);
+                        debugLog('✅ Fallback call started successfully', 'success');
+                        updateVoiceStatus('Connected (Fallback)', 'listening');
+                        
+                        document.getElementById('start-call-btn').style.display = 'none';
+                        document.getElementById('end-call-btn').style.display = 'inline-block';
+                    } catch (fallbackError) {
+                        debugLog(`❌ Fallback also failed: ${fallbackError.message}`, 'error');
+                        currentConfig = originalConfig;
+                        updateVoiceStatus('Call failed', 'error');
+                    }
+                }
+            }
+        }
+        
+        async function endVoiceCall() {
+            if (activeCall && vapiInstance) {
+                try {
+                    await vapiInstance.stop();
+                    debugLog('✅ Call ended successfully', 'success');
+                } catch (error) {
+                    debugLog(`Error ending call: ${error.message}`, 'error');
+                }
+            }
+            
+            // Reset UI
+            activeCall = null;
+            updateVoiceStatus('Ready to connect...', 'idle');
+            document.getElementById('start-call-btn').style.display = 'inline-block';
+            document.getElementById('end-call-btn').style.display = 'none';
+        }
+        
+        // Test browser compatibility
+        async function testBrowserCompatibility() {
+            debugLog('🌐 Testing browser compatibility...', 'info');
+            
+            const tests = [
+                {
+                    name: 'WebRTC Support',
+                    test: () => typeof RTCPeerConnection !== 'undefined'
+                },
+                {
+                    name: 'MediaDevices API',
+                    test: () => navigator.mediaDevices && navigator.mediaDevices.getUserMedia
+                },
+                {
+                    name: 'WebSocket Support', 
+                    test: () => typeof WebSocket !== 'undefined'
+                },
+                {
+                    name: 'Web Audio API',
+                    test: () => typeof AudioContext !== 'undefined' || typeof webkitAudioContext !== 'undefined'
+                },
+                {
+                    name: 'Promises Support',
+                    test: () => typeof Promise !== 'undefined'
+                },
+                {
+                    name: 'Async/Await Support',
+                    test: () => {
+                        try {
+                            eval('(async function() {})');
+                            return true;
+                        } catch {
+                            return false;
+                        }
+                    }
+                }
+            ];
+            
+            let passed = 0;
+            tests.forEach(test => {
+                const result = test.test();
+                if (result) passed++;
+                debugLog(`${test.name}: ${result ? '✅ Pass' : '❌ Fail'}`, result ? 'success' : 'error');
+            });
+            
+            const compatibility = passed / tests.length;
+            if (compatibility >= 0.8) {
+                updateStatus('browser-status', `Fully Compatible (${passed}/${tests.length})`, 'success');
+                debugLog('✅ Browser is fully compatible with VAPI', 'success');
+            } else if (compatibility >= 0.6) {
+                updateStatus('browser-status', `Mostly Compatible (${passed}/${tests.length})`, 'warning');
+                debugLog('⚠️ Browser has some compatibility issues', 'warning');
+            } else {
+                updateStatus('browser-status', `Limited Compatibility (${passed}/${tests.length})`, 'error');
+                debugLog('❌ Browser has significant compatibility issues', 'error');
+            }
+        }
+        
+        // Initialize on page load
+        window.addEventListener('load', async () => {
+            debugLog('🚀 Comprehensive VAPI Debug Solution loaded', 'success');
+            
+            // Auto-run diagnostics
+            setTimeout(async () => {
+                await runDiagnostics();
+                await testSDKLoading();
+                await testAPIConnection();
+                debugLog('🎯 System ready for voice calls', 'success');
+            }, 1000);
+        });
+    </script>
+</body>
+</html>

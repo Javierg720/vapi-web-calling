@@ -1,0 +1,1125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VAPI Web SDK - Browser Compatibility Fixes</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #1e3c72, #2a5298);
+            color: #333;
+            min-height: 100vh;
+        }
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.2);
+            overflow: hidden;
+        }
+        .header {
+            background: linear-gradient(135deg, #28a745, #20c997);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        .header h1 {
+            margin: 0;
+            font-size: 2.5rem;
+            font-weight: 300;
+        }
+        .content {
+            padding: 30px;
+        }
+        .fix-section {
+            margin-bottom: 30px;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        .fix-header {
+            background: #f8f9fa;
+            padding: 15px 20px;
+            border-bottom: 1px solid #e0e0e0;
+            font-weight: 600;
+            color: #495057;
+        }
+        .fix-body {
+            padding: 20px;
+        }
+        .status-indicator {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+        .status-good { background: #28a745; }
+        .status-warning { background: #ffc107; }
+        .status-error { background: #dc3545; }
+        .btn {
+            background: linear-gradient(135deg, #28a745, #20c997);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            margin: 5px;
+            font-size: 14px;
+        }
+        .btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        }
+        .btn-test {
+            background: linear-gradient(135deg, #007bff, #0056b3);
+        }
+        .code-block {
+            background: #2d3748;
+            color: #e2e8f0;
+            padding: 15px;
+            border-radius: 6px;
+            font-family: 'Monaco', monospace;
+            font-size: 14px;
+            margin: 10px 0;
+            overflow-x: auto;
+        }
+        .warning-box {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            color: #856404;
+            padding: 15px;
+            border-radius: 6px;
+            margin: 10px 0;
+        }
+        .error-box {
+            background: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+            padding: 15px;
+            border-radius: 6px;
+            margin: 10px 0;
+        }
+        .success-box {
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+            padding: 15px;
+            border-radius: 6px;
+            margin: 10px 0;
+        }
+        .log-panel {
+            background: #2d3748;
+            color: #e2e8f0;
+            padding: 15px;
+            border-radius: 8px;
+            font-family: monospace;
+            font-size: 12px;
+            max-height: 300px;
+            overflow-y: auto;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔧 VAPI Browser Fixes</h1>
+            <p>Automatic Detection and Resolution of Compatibility Issues</p>
+        </div>
+        
+        <div class="content">
+            <!-- HTTPS/Security Context Fix -->
+            <div class="fix-section">
+                <div class="fix-header">
+                    <span class="status-indicator" id="https-status"></span>
+                    🔒 HTTPS & Secure Context Issues
+                </div>
+                <div class="fix-body">
+                    <p>VAPI Web SDK requires HTTPS and secure context for WebRTC functionality.</p>
+                    <div id="https-details"></div>
+                    <button class="btn btn-test" onclick="checkHTTPSContext()">Check HTTPS Context</button>
+                    <button class="btn" onclick="applyHTTPSFix()">Apply Fix</button>
+                </div>
+            </div>
+
+            <!-- CDN Loading Fix -->
+            <div class="fix-section">
+                <div class="fix-header">
+                    <span class="status-indicator" id="cdn-status"></span>
+                    📦 CDN Loading Issues
+                </div>
+                <div class="fix-body">
+                    <p>Multiple fallback CDN URLs and loading strategies for VAPI SDK.</p>
+                    <div id="cdn-details"></div>
+                    <button class="btn btn-test" onclick="testCDNLoading()">Test CDN Loading</button>
+                    <button class="btn" onclick="applyCDNFix()">Apply CDN Fix</button>
+                </div>
+            </div>
+
+            <!-- WebRTC & Media Permissions Fix -->
+            <div class="fix-section">
+                <div class="fix-header">
+                    <span class="status-indicator" id="webrtc-status"></span>
+                    🎤 WebRTC & Media Permission Issues
+                </div>
+                <div class="fix-body">
+                    <p>Microphone permissions and WebRTC compatibility fixes.</p>
+                    <div id="webrtc-details"></div>
+                    <button class="btn btn-test" onclick="testWebRTCPermissions()">Test Permissions</button>
+                    <button class="btn" onclick="applyWebRTCFix()">Apply WebRTC Fix</button>
+                </div>
+            </div>
+
+            <!-- Browser-Specific Fixes -->
+            <div class="fix-section">
+                <div class="fix-header">
+                    <span class="status-indicator" id="browser-status"></span>
+                    🌐 Browser-Specific Compatibility
+                </div>
+                <div class="fix-body">
+                    <p>Safari, Firefox, and mobile browser specific fixes.</p>
+                    <div id="browser-details"></div>
+                    <button class="btn btn-test" onclick="testBrowserCompat()">Test Browser Compat</button>
+                    <button class="btn" onclick="applyBrowserFix()">Apply Browser Fix</button>
+                </div>
+            </div>
+
+            <!-- CSP & Security Policy Fix -->
+            <div class="fix-section">
+                <div class="fix-header">
+                    <span class="status-indicator" id="csp-status"></span>
+                    🛡️ Content Security Policy Issues
+                </div>
+                <div class="fix-body">
+                    <p>CSP headers and security policy configurations for VAPI SDK.</p>
+                    <div id="csp-details"></div>
+                    <button class="btn btn-test" onclick="testCSP()">Test CSP</button>
+                    <button class="btn" onclick="applyCSPFix()">Apply CSP Fix</button>
+                </div>
+            </div>
+
+            <!-- Network & Connectivity Fix -->
+            <div class="fix-section">
+                <div class="fix-header">
+                    <span class="status-indicator" id="network-status"></span>
+                    🌐 Network Connectivity Issues
+                </div>
+                <div class="fix-body">
+                    <p>Ad blockers, firewalls, and network connectivity problems.</p>
+                    <div id="network-details"></div>
+                    <button class="btn btn-test" onclick="testNetworkIssues()">Test Network</button>
+                    <button class="btn" onclick="applyNetworkFix()">Apply Network Fix</button>
+                </div>
+            </div>
+
+            <!-- Test VAPI Call -->
+            <div class="fix-section">
+                <div class="fix-header">
+                    <span class="status-indicator status-warning"></span>
+                    🚀 Test VAPI Call with All Fixes Applied
+                </div>
+                <div class="fix-body">
+                    <p>Test actual VAPI call functionality with all compatibility fixes applied.</p>
+                    <button class="btn" onclick="testVAPICallWithFixes()" style="font-size: 18px; padding: 15px 30px;">
+                        📞 Test VAPI Call
+                    </button>
+                    <button class="btn" onclick="endVAPICall()" style="background: #dc3545; display: none;" id="end-call-btn">
+                        📞 End Call
+                    </button>
+                </div>
+            </div>
+
+            <!-- Global Actions -->
+            <div style="text-align: center; margin: 30px 0;">
+                <button class="btn" onclick="runAllTests()" style="font-size: 18px; padding: 15px 30px;">
+                    🔍 Run All Tests
+                </button>
+                <button class="btn" onclick="applyAllFixes()" style="background: #28a745; font-size: 18px; padding: 15px 30px;">
+                    🔧 Apply All Fixes
+                </button>
+                <button class="btn" onclick="downloadFixReport()" style="background: #17a2b8;">
+                    📄 Download Report
+                </button>
+            </div>
+
+            <!-- Log Panel -->
+            <div class="log-panel" id="fix-log">
+                <strong>🔍 Fix Log:</strong><br>
+                Initializing browser compatibility fixes...
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Global state
+        let fixResults = {
+            https: { tested: false, status: 'unknown', fixes: [] },
+            cdn: { tested: false, status: 'unknown', fixes: [] },
+            webrtc: { tested: false, status: 'unknown', fixes: [] },
+            browser: { tested: false, status: 'unknown', fixes: [] },
+            csp: { tested: false, status: 'unknown', fixes: [] },
+            network: { tested: false, status: 'unknown', fixes: [] }
+        };
+
+        let vapi = null;
+        let activeCall = null;
+
+        // CDN URLs with fallbacks
+        const cdnUrls = [
+            'https://cdn.jsdelivr.net/npm/@vapi-ai/web@2.3.8/dist/vapi.js',
+            'https://unpkg.com/@vapi-ai/web@latest/dist/index.js',
+            'https://cdn.jsdelivr.net/npm/@vapi-ai/web@latest/dist/vapi.js',
+            'https://cdn.skypack.dev/@vapi-ai/web@latest'
+        ];
+
+        // Logging function
+        function log(message, type = 'info') {
+            const logPanel = document.getElementById('fix-log');
+            const timestamp = new Date().toLocaleTimeString();
+            const colors = {
+                info: '#63b3ed',
+                success: '#68d391',
+                error: '#fc8181',
+                warning: '#fbd38d'
+            };
+            
+            logPanel.innerHTML += `<br><span style="color: ${colors[type]}">[${timestamp}] ${message}</span>`;
+            logPanel.scrollTop = logPanel.scrollHeight;
+            console.log(`[${type.toUpperCase()}] ${message}`);
+        }
+
+        // Status indicator updates
+        function updateStatusIndicator(id, status) {
+            const indicator = document.getElementById(id);
+            indicator.className = `status-indicator status-${status}`;
+        }
+
+        // Browser detection
+        function detectBrowser() {
+            const ua = navigator.userAgent;
+            if (ua.includes('Chrome') && !ua.includes('Edg')) return { name: 'chrome', version: ua.match(/Chrome\/([0-9.]+)/)?.[1] };
+            if (ua.includes('Firefox')) return { name: 'firefox', version: ua.match(/Firefox\/([0-9.]+)/)?.[1] };
+            if (ua.includes('Safari') && !ua.includes('Chrome')) return { name: 'safari', version: ua.match(/Version\/([0-9.]+)/)?.[1] };
+            if (ua.includes('Edg')) return { name: 'edge', version: ua.match(/Edg\/([0-9.]+)/)?.[1] };
+            return { name: 'unknown', version: 'unknown' };
+        }
+
+        // HTTPS Context Check
+        async function checkHTTPSContext() {
+            log('Testing HTTPS and secure context...');
+            const results = [];
+            
+            const isHTTPS = location.protocol === 'https:';
+            const isSecureContext = window.isSecureContext || false;
+            
+            if (!isHTTPS) {
+                results.push('❌ Not using HTTPS - WebRTC requires HTTPS');
+                fixResults.https.fixes.push('redirect-to-https');
+                updateStatusIndicator('https-status', 'error');
+            } else {
+                results.push('✅ HTTPS protocol detected');
+            }
+            
+            if (!isSecureContext) {
+                results.push('❌ Not in secure context - Required for WebRTC');
+                fixResults.https.fixes.push('secure-context-required');
+                updateStatusIndicator('https-status', 'error');
+            } else {
+                results.push('✅ Secure context available');
+            }
+            
+            // Test WebRTC in secure context
+            try {
+                const pc = new RTCPeerConnection();
+                pc.close();
+                results.push('✅ RTCPeerConnection works in current context');
+                if (isHTTPS && isSecureContext) {
+                    updateStatusIndicator('https-status', 'good');
+                }
+            } catch (error) {
+                results.push(`❌ RTCPeerConnection failed: ${error.message}`);
+                fixResults.https.fixes.push('webrtc-context-fix');
+                updateStatusIndicator('https-status', 'error');
+            }
+            
+            fixResults.https.tested = true;
+            fixResults.https.status = fixResults.https.fixes.length === 0 ? 'good' : 'needs-fix';
+            
+            document.getElementById('https-details').innerHTML = `
+                <div class="${fixResults.https.status === 'good' ? 'success-box' : 'error-box'}">
+                    ${results.join('<br>')}
+                </div>
+            `;
+            
+            log(`HTTPS context check completed: ${fixResults.https.status}`);
+        }
+
+        function applyHTTPSFix() {
+            if (!fixResults.https.tested) {
+                log('Please run HTTPS test first', 'error');
+                return;
+            }
+            
+            if (fixResults.https.fixes.includes('redirect-to-https')) {
+                if (confirm('This page needs to be loaded over HTTPS. Redirect now?')) {
+                    window.location.href = window.location.href.replace('http:', 'https:');
+                    return;
+                }
+            }
+            
+            if (fixResults.https.fixes.length === 0) {
+                log('No HTTPS fixes needed', 'success');
+                return;
+            }
+            
+            // Apply secure context polyfills if needed
+            if (!window.isSecureContext && location.protocol === 'https:') {
+                window.isSecureContext = true;
+                log('Applied secure context polyfill', 'success');
+            }
+            
+            log('HTTPS fixes applied', 'success');
+        }
+
+        // CDN Loading Test
+        async function testCDNLoading() {
+            log('Testing CDN accessibility...');
+            const results = [];
+            let workingUrl = null;
+            
+            for (const url of cdnUrls) {
+                try {
+                    const response = await fetch(url, { method: 'HEAD', cache: 'no-cache' });
+                    if (response.ok) {
+                        results.push(`✅ ${url} - Status: ${response.status}`);
+                        workingUrl = workingUrl || url;
+                    } else {
+                        results.push(`❌ ${url} - Status: ${response.status}`);
+                    }
+                } catch (error) {
+                    results.push(`❌ ${url} - Error: ${error.message}`);
+                    fixResults.cdn.fixes.push('cdn-fallback-needed');
+                }
+            }
+            
+            if (workingUrl) {
+                updateStatusIndicator('cdn-status', 'good');
+                fixResults.cdn.status = 'good';
+            } else {
+                updateStatusIndicator('cdn-status', 'error');
+                fixResults.cdn.status = 'needs-fix';
+                fixResults.cdn.fixes.push('all-cdns-failed');
+            }
+            
+            fixResults.cdn.tested = true;
+            
+            document.getElementById('cdn-details').innerHTML = `
+                <div class="${fixResults.cdn.status === 'good' ? 'success-box' : 'error-box'}">
+                    ${results.join('<br>')}
+                </div>
+            `;
+            
+            log(`CDN loading test completed: ${fixResults.cdn.status}`);
+        }
+
+        async function applyCDNFix() {
+            log('Applying CDN loading fixes...');
+            
+            if (!fixResults.cdn.tested) {
+                await testCDNLoading();
+            }
+            
+            // Create resilient script loading function
+            window.loadVapiSDK = async function() {
+                return new Promise((resolve, reject) => {
+                    let currentUrlIndex = 0;
+                    
+                    function tryLoadScript() {
+                        if (currentUrlIndex >= cdnUrls.length) {
+                            reject(new Error('All CDN URLs failed'));
+                            return;
+                        }
+                        
+                        const script = document.createElement('script');
+                        script.src = cdnUrls[currentUrlIndex];
+                        script.onload = () => {
+                            log(`Successfully loaded VAPI SDK from: ${cdnUrls[currentUrlIndex]}`, 'success');
+                            resolve(script);
+                        };
+                        script.onerror = () => {
+                            log(`Failed to load from: ${cdnUrls[currentUrlIndex]}`, 'warning');
+                            currentUrlIndex++;
+                            document.head.removeChild(script);
+                            tryLoadScript();
+                        };
+                        
+                        document.head.appendChild(script);
+                    }
+                    
+                    tryLoadScript();
+                });
+            };
+            
+            // Load the SDK with fallbacks
+            try {
+                await window.loadVapiSDK();
+                log('CDN fix applied successfully - SDK loaded with fallback support', 'success');
+            } catch (error) {
+                log(`CDN fix failed: ${error.message}`, 'error');
+            }
+        }
+
+        // WebRTC & Media Permissions Test
+        async function testWebRTCPermissions() {
+            log('Testing WebRTC and media permissions...');
+            const results = [];
+            
+            // Test RTCPeerConnection
+            try {
+                const pc = new RTCPeerConnection();
+                pc.close();
+                results.push('✅ RTCPeerConnection available');
+            } catch (error) {
+                results.push(`❌ RTCPeerConnection failed: ${error.message}`);
+                fixResults.webrtc.fixes.push('webrtc-polyfill');
+            }
+            
+            // Test MediaDevices API
+            if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+                results.push('✅ getUserMedia API available');
+                
+                // Test microphone access
+                try {
+                    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                    stream.getTracks().forEach(track => track.stop());
+                    results.push('✅ Microphone access granted');
+                    updateStatusIndicator('webrtc-status', 'good');
+                } catch (error) {
+                    results.push(`❌ Microphone access denied: ${error.message}`);
+                    fixResults.webrtc.fixes.push('permission-handler');
+                    updateStatusIndicator('webrtc-status', 'error');
+                }
+            } else {
+                results.push('❌ getUserMedia API not available');
+                fixResults.webrtc.fixes.push('getusermedia-polyfill');
+                updateStatusIndicator('webrtc-status', 'error');
+            }
+            
+            // Test Web Audio API
+            try {
+                const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                audioContext.close();
+                results.push('✅ Web Audio API available');
+            } catch (error) {
+                results.push(`❌ Web Audio API failed: ${error.message}`);
+                fixResults.webrtc.fixes.push('webaudio-polyfill');
+            }
+            
+            fixResults.webrtc.tested = true;
+            fixResults.webrtc.status = fixResults.webrtc.fixes.length === 0 ? 'good' : 'needs-fix';
+            
+            document.getElementById('webrtc-details').innerHTML = `
+                <div class="${fixResults.webrtc.status === 'good' ? 'success-box' : 'error-box'}">
+                    ${results.join('<br>')}
+                </div>
+            `;
+            
+            log(`WebRTC test completed: ${fixResults.webrtc.status}`);
+        }
+
+        async function applyWebRTCFix() {
+            log('Applying WebRTC and media permission fixes...');
+            
+            // Enhanced permission request with user guidance
+            window.requestMicrophonePermission = async function() {
+                try {
+                    log('Requesting microphone permission...');
+                    const stream = await navigator.mediaDevices.getUserMedia({ 
+                        audio: {
+                            echoCancellation: true,
+                            noiseSuppression: true,
+                            autoGainControl: true
+                        }
+                    });
+                    stream.getTracks().forEach(track => track.stop());
+                    log('Microphone permission granted', 'success');
+                    return true;
+                } catch (error) {
+                    log(`Permission request failed: ${error.message}`, 'error');
+                    
+                    // Provide user guidance based on error
+                    if (error.name === 'NotAllowedError') {
+                        alert('Microphone permission denied. Please enable microphone access in your browser settings and refresh the page.');
+                    } else if (error.name === 'NotFoundError') {
+                        alert('No microphone found. Please connect a microphone and refresh the page.');
+                    } else if (error.name === 'NotReadableError') {
+                        alert('Microphone is being used by another application. Please close other apps using the microphone.');
+                    }
+                    return false;
+                }
+            };
+            
+            // Mobile-specific WebRTC fixes
+            if (/iPhone|iPad|iPod|Android/i.test(navigator.userAgent)) {
+                log('Applying mobile WebRTC fixes...');
+                
+                // iOS Safari specific fixes
+                if (/iPhone|iPad|iPod/i.test(navigator.userAgent)) {
+                    // Force HTTPS for iOS
+                    if (location.protocol !== 'https:') {
+                        log('iOS requires HTTPS for WebRTC', 'warning');
+                    }
+                    
+                    // Handle iOS audio context restrictions
+                    window.initializeAudioContext = function() {
+                        const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                        if (audioContext.state === 'suspended') {
+                            audioContext.resume();
+                        }
+                        return audioContext;
+                    };
+                }
+            }
+            
+            log('WebRTC fixes applied', 'success');
+        }
+
+        // Browser Compatibility Test
+        async function testBrowserCompat() {
+            log('Testing browser-specific compatibility...');
+            const browser = detectBrowser();
+            const results = [`Browser: ${browser.name} ${browser.version}`];
+            
+            // Safari-specific tests
+            if (browser.name === 'safari') {
+                results.push('🍎 Safari detected - checking compatibility...');
+                
+                // Check for WebRTC support in Safari
+                if (typeof RTCPeerConnection !== 'undefined') {
+                    results.push('✅ Safari WebRTC support available');
+                } else {
+                    results.push('❌ Safari WebRTC not supported in this version');
+                    fixResults.browser.fixes.push('safari-webrtc-warning');
+                }
+                
+                // Check for getUserMedia in Safari
+                if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+                    results.push('✅ Safari getUserMedia available');
+                } else {
+                    results.push('❌ Safari getUserMedia not available');
+                    fixResults.browser.fixes.push('safari-getusermedia-polyfill');
+                }
+                
+                updateStatusIndicator('browser-status', fixResults.browser.fixes.length === 0 ? 'good' : 'warning');
+            }
+            
+            // Firefox-specific tests
+            else if (browser.name === 'firefox') {
+                results.push('🦊 Firefox detected - checking compatibility...');
+                results.push('✅ Firefox generally has good VAPI SDK support');
+                updateStatusIndicator('browser-status', 'good');
+            }
+            
+            // Chrome-specific tests
+            else if (browser.name === 'chrome') {
+                results.push('🔵 Chrome detected - checking compatibility...');
+                results.push('✅ Chrome has excellent VAPI SDK support');
+                updateStatusIndicator('browser-status', 'good');
+            }
+            
+            // Edge-specific tests
+            else if (browser.name === 'edge') {
+                results.push('🔷 Edge detected - checking compatibility...');
+                results.push('✅ Edge has good VAPI SDK support');
+                updateStatusIndicator('browser-status', 'good');
+            }
+            
+            // Unknown browser
+            else {
+                results.push('❓ Unknown browser - may have limited support');
+                fixResults.browser.fixes.push('unknown-browser-warning');
+                updateStatusIndicator('browser-status', 'warning');
+            }
+            
+            // Mobile browser tests
+            if (/iPhone|iPad|iPod|Android/i.test(navigator.userAgent)) {
+                results.push('📱 Mobile browser detected');
+                if (browser.name === 'safari') {
+                    results.push('⚠️ iOS Safari may have WebRTC limitations');
+                    fixResults.browser.fixes.push('ios-safari-limitations');
+                }
+            }
+            
+            fixResults.browser.tested = true;
+            fixResults.browser.status = fixResults.browser.fixes.length === 0 ? 'good' : 'needs-fix';
+            
+            document.getElementById('browser-details').innerHTML = `
+                <div class="${fixResults.browser.status === 'good' ? 'success-box' : 'warning-box'}">
+                    ${results.join('<br>')}
+                </div>
+            `;
+            
+            log(`Browser compatibility test completed: ${fixResults.browser.status}`);
+        }
+
+        function applyBrowserFix() {
+            log('Applying browser-specific fixes...');
+            const browser = detectBrowser();
+            
+            // Safari-specific fixes
+            if (browser.name === 'safari') {
+                // Safari getUserMedia polyfill
+                if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+                    if (navigator.getUserMedia || navigator.webkitGetUserMedia) {
+                        log('Applying Safari getUserMedia polyfill...', 'info');
+                        navigator.mediaDevices = navigator.mediaDevices || {};
+                        navigator.mediaDevices.getUserMedia = function(constraints) {
+                            const getUserMedia = navigator.getUserMedia || navigator.webkitGetUserMedia;
+                            if (!getUserMedia) {
+                                return Promise.reject(new Error('getUserMedia not supported'));
+                            }
+                            
+                            return new Promise((resolve, reject) => {
+                                getUserMedia.call(navigator, constraints, resolve, reject);
+                            });
+                        };
+                    }
+                }
+                
+                // Safari audio context unlock
+                window.unlockAudioContext = function() {
+                    const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                    if (audioContext.state === 'suspended') {
+                        const unlock = () => {
+                            audioContext.resume().then(() => {
+                                document.body.removeEventListener('touchstart', unlock, true);
+                                document.body.removeEventListener('click', unlock, true);
+                            });
+                        };
+                        document.body.addEventListener('touchstart', unlock, true);
+                        document.body.addEventListener('click', unlock, true);
+                    }
+                };
+                
+                log('Safari-specific fixes applied', 'success');
+            }
+            
+            // Mobile browser fixes
+            if (/iPhone|iPad|iPod|Android/i.test(navigator.userAgent)) {
+                // Mobile viewport and touch handling
+                const viewport = document.querySelector('meta[name="viewport"]');
+                if (viewport) {
+                    viewport.content = 'width=device-width, initial-scale=1.0, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0';
+                }
+                
+                // Prevent zoom on input focus (iOS)
+                if (/iPhone|iPad|iPod/i.test(navigator.userAgent)) {
+                    const inputs = document.querySelectorAll('input, select, textarea');
+                    inputs.forEach(input => {
+                        input.addEventListener('focus', () => {
+                            setTimeout(() => {
+                                window.scrollTo(0, 0);
+                            }, 500);
+                        });
+                    });
+                }
+                
+                log('Mobile browser fixes applied', 'success');
+            }
+            
+            log('Browser fixes applied', 'success');
+        }
+
+        // CSP Test
+        async function testCSP() {
+            log('Testing Content Security Policy...');
+            const results = [];
+            
+            // Test eval (CSP script-src 'unsafe-eval')
+            try {
+                eval('1+1');
+                results.push('✅ eval() allowed - CSP permits dynamic code execution');
+                fixResults.csp.status = 'good';
+            } catch (error) {
+                results.push('❌ eval() blocked - Strict CSP detected');
+                fixResults.csp.fixes.push('csp-eval-restriction');
+                fixResults.csp.status = 'needs-fix';
+            }
+            
+            // Test inline scripts (CSP script-src 'unsafe-inline')
+            const testScript = document.createElement('script');
+            testScript.textContent = 'window.cspInlineTest = true;';
+            try {
+                document.head.appendChild(testScript);
+                if (window.cspInlineTest) {
+                    results.push('✅ Inline scripts allowed');
+                } else {
+                    results.push('❌ Inline scripts may be blocked by CSP');
+                    fixResults.csp.fixes.push('csp-inline-restriction');
+                }
+                document.head.removeChild(testScript);
+            } catch (error) {
+                results.push('❌ Inline script execution blocked');
+                fixResults.csp.fixes.push('csp-inline-restriction');
+            }
+            
+            // Test external script loading
+            try {
+                const testExternal = document.createElement('script');
+                testExternal.src = 'data:text/javascript,window.cspExternalTest=true;';
+                document.head.appendChild(testExternal);
+                setTimeout(() => {
+                    if (!window.cspExternalTest) {
+                        results.push('⚠️ External script loading may be restricted');
+                        fixResults.csp.fixes.push('csp-external-restriction');
+                    } else {
+                        results.push('✅ External scripts can be loaded');
+                    }
+                    document.head.removeChild(testExternal);
+                }, 100);
+            } catch (error) {
+                results.push('❌ External script loading blocked');
+                fixResults.csp.fixes.push('csp-external-restriction');
+            }
+            
+            updateStatusIndicator('csp-status', fixResults.csp.status === 'good' ? 'good' : 'warning');
+            fixResults.csp.tested = true;
+            
+            document.getElementById('csp-details').innerHTML = `
+                <div class="${fixResults.csp.status === 'good' ? 'success-box' : 'warning-box'}">
+                    ${results.join('<br>')}
+                    ${fixResults.csp.fixes.length > 0 ? '<br><br><strong>Required CSP Headers:</strong><br>' + generateCSPHeaders() : ''}
+                </div>
+            `;
+            
+            log(`CSP test completed: ${fixResults.csp.status}`);
+        }
+
+        function generateCSPHeaders() {
+            const headers = [];
+            
+            if (fixResults.csp.fixes.includes('csp-eval-restriction')) {
+                headers.push("script-src 'self' 'unsafe-eval' https://cdn.jsdelivr.net https://unpkg.com;");
+            }
+            
+            if (fixResults.csp.fixes.includes('csp-inline-restriction')) {
+                headers.push("script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://unpkg.com;");
+            }
+            
+            if (fixResults.csp.fixes.includes('csp-external-restriction')) {
+                headers.push("script-src 'self' https://cdn.jsdelivr.net https://unpkg.com https://js.puter.com;");
+            }
+            
+            headers.push("connect-src 'self' https://api.vapi.ai https://*.daily.co wss://*.daily.co;");
+            headers.push("media-src 'self' blob: data:;");
+            
+            return headers.join('<br>');
+        }
+
+        function applyCSPFix() {
+            log('Applying CSP fixes...');
+            
+            if (!fixResults.csp.tested) {
+                log('Please run CSP test first', 'error');
+                return;
+            }
+            
+            const requiredCSP = generateCSPHeaders();
+            
+            document.getElementById('csp-details').innerHTML += `
+                <div class="code-block">
+                    <strong>Add these CSP headers to your server configuration:</strong><br><br>
+                    Content-Security-Policy: ${requiredCSP}
+                </div>
+                <div class="warning-box">
+                    <strong>Note:</strong> CSP headers must be set by the server. You may need to contact your hosting provider or update your server configuration.
+                </div>
+            `;
+            
+            log('CSP fix guidance provided - server configuration required', 'warning');
+        }
+
+        // Network Issues Test
+        async function testNetworkIssues() {
+            log('Testing network connectivity issues...');
+            const results = [];
+            
+            // Test CDN reachability with timing
+            const startTime = performance.now();
+            try {
+                const response = await fetch(cdnUrls[0], { cache: 'no-cache' });
+                const endTime = performance.now();
+                const latency = endTime - startTime;
+                
+                if (response.ok) {
+                    results.push(`✅ CDN reachable in ${latency.toFixed(0)}ms`);
+                    if (latency > 5000) {
+                        results.push('⚠️ High latency detected - may affect performance');
+                        fixResults.network.fixes.push('high-latency');
+                    }
+                } else {
+                    results.push(`❌ CDN returned status: ${response.status}`);
+                    fixResults.network.fixes.push('cdn-unreachable');
+                }
+            } catch (error) {
+                results.push(`❌ CDN unreachable: ${error.message}`);
+                fixResults.network.fixes.push('network-connectivity');
+            }
+            
+            // Test for ad blocker interference
+            try {
+                const adTest = await fetch('https://pagead2.googlesyndication.com/pagead/show_ads.js', { 
+                    method: 'HEAD',
+                    cache: 'no-cache'
+                });
+                results.push('✅ No ad blocker detected');
+            } catch (error) {
+                results.push('⚠️ Ad blocker may be interfering with requests');
+                fixResults.network.fixes.push('adblocker-interference');
+            }
+            
+            // Test VAPI API connectivity
+            try {
+                const apiResponse = await fetch('https://api.vapi.ai/health', { method: 'HEAD' });
+                if (apiResponse.ok) {
+                    results.push('✅ VAPI API reachable');
+                } else {
+                    results.push('⚠️ VAPI API may be experiencing issues');
+                    fixResults.network.fixes.push('api-connectivity');
+                }
+            } catch (error) {
+                results.push(`❌ VAPI API unreachable: ${error.message}`);
+                fixResults.network.fixes.push('api-unreachable');
+            }
+            
+            fixResults.network.tested = true;
+            fixResults.network.status = fixResults.network.fixes.length === 0 ? 'good' : 'needs-fix';
+            
+            updateStatusIndicator('network-status', fixResults.network.status === 'good' ? 'good' : 'warning');
+            
+            document.getElementById('network-details').innerHTML = `
+                <div class="${fixResults.network.status === 'good' ? 'success-box' : 'warning-box'}">
+                    ${results.join('<br>')}
+                </div>
+            `;
+            
+            log(`Network test completed: ${fixResults.network.status}`);
+        }
+
+        function applyNetworkFix() {
+            log('Applying network connectivity fixes...');
+            
+            // Add retry mechanism for failed requests
+            window.fetchWithRetry = async function(url, options = {}, maxRetries = 3) {
+                for (let i = 0; i < maxRetries; i++) {
+                    try {
+                        const response = await fetch(url, options);
+                        return response;
+                    } catch (error) {
+                        if (i === maxRetries - 1) throw error;
+                        log(`Retry ${i + 1}/${maxRetries} for ${url}`, 'warning');
+                        await new Promise(resolve => setTimeout(resolve, 1000 * (i + 1)));
+                    }
+                }
+            };
+            
+            // Add network status monitoring
+            window.addEventListener('online', () => {
+                log('Network connection restored', 'success');
+            });
+            
+            window.addEventListener('offline', () => {
+                log('Network connection lost', 'error');
+            });
+            
+            log('Network fixes applied', 'success');
+        }
+
+        // Test VAPI Call with all fixes
+        async function testVAPICallWithFixes() {
+            log('Testing VAPI call with all fixes applied...');
+            
+            try {
+                // Ensure all fixes are applied
+                if (typeof window.loadVapiSDK === 'function' && typeof window.Vapi === 'undefined') {
+                    log('Loading VAPI SDK with fallbacks...');
+                    await window.loadVapiSDK();
+                }
+                
+                // Wait for SDK to be available
+                if (typeof window.Vapi === 'undefined') {
+                    throw new Error('VAPI SDK not available after applying fixes');
+                }
+                
+                // Request permissions if needed
+                if (typeof window.requestMicrophonePermission === 'function') {
+                    const hasPermission = await window.requestMicrophonePermission();
+                    if (!hasPermission) {
+                        throw new Error('Microphone permission required');
+                    }
+                }
+                
+                // Initialize VAPI with proper configuration
+                vapi = new window.Vapi('16c71f6e-10ce-47b2-b03c-033f3534fc0c');
+                
+                // Set up event listeners
+                vapi.on('call-start', () => {
+                    log('✅ VAPI call started successfully!', 'success');
+                    document.getElementById('end-call-btn').style.display = 'inline-block';
+                });
+                
+                vapi.on('call-end', () => {
+                    log('VAPI call ended', 'info');
+                    endVAPICall();
+                });
+                
+                vapi.on('error', (error) => {
+                    log(`VAPI error: ${error.message}`, 'error');
+                });
+                
+                vapi.on('message', (message) => {
+                    log(`VAPI message: ${message.type}`, 'info');
+                });
+                
+                // Start call with minimal configuration
+                activeCall = await vapi.start({
+                    assistant: {
+                        model: {
+                            provider: "openai",
+                            model: "gpt-4",
+                            messages: [
+                                {
+                                    role: "system",
+                                    content: "You are a helpful voice assistant testing browser compatibility. Keep responses very brief."
+                                }
+                            ]
+                        },
+                        voice: {
+                            provider: "11labs",
+                            voiceId: "21m00Tcm4TlvDq8ikWAM"
+                        },
+                        firstMessage: "Browser compatibility test successful! VAPI SDK is working correctly."
+                    }
+                });
+                
+                log('VAPI call initiated - listening for connection...', 'info');
+                
+            } catch (error) {
+                log(`VAPI call test failed: ${error.message}`, 'error');
+                
+                // Provide specific guidance based on error
+                if (error.message.includes('permission')) {
+                    alert('Microphone permission is required. Please allow microphone access and try again.');
+                } else if (error.message.includes('HTTPS')) {
+                    alert('HTTPS is required for VAPI Web SDK. Please access this page via HTTPS.');
+                } else if (error.message.includes('SDK')) {
+                    alert('VAPI SDK failed to load. Please check your internet connection and disable any ad blockers.');
+                }
+            }
+        }
+
+        function endVAPICall() {
+            if (vapi && activeCall) {
+                vapi.stop();
+                vapi = null;
+                activeCall = null;
+                document.getElementById('end-call-btn').style.display = 'none';
+                log('VAPI call ended', 'info');
+            }
+        }
+
+        // Run all tests
+        async function runAllTests() {
+            log('Running comprehensive browser compatibility tests...', 'info');
+            
+            await checkHTTPSContext();
+            await testCDNLoading();
+            await testWebRTCPermissions();
+            await testBrowserCompat();
+            await testCSP();
+            await testNetworkIssues();
+            
+            log('All tests completed!', 'success');
+            
+            // Generate summary
+            const summary = Object.values(fixResults).map(result => result.status);
+            const goodCount = summary.filter(s => s === 'good').length;
+            const totalCount = summary.length;
+            
+            log(`Test Summary: ${goodCount}/${totalCount} categories passed`, goodCount === totalCount ? 'success' : 'warning');
+        }
+
+        // Apply all fixes
+        async function applyAllFixes() {
+            log('Applying all compatibility fixes...', 'info');
+            
+            await applyHTTPSFix();
+            await applyCDNFix();
+            await applyWebRTCFix();
+            await applyBrowserFix();
+            await applyCSPFix();
+            await applyNetworkFix();
+            
+            log('All fixes applied!', 'success');
+            alert('Browser compatibility fixes have been applied. You can now test the VAPI call functionality.');
+        }
+
+        // Download fix report
+        function downloadFixReport() {
+            const report = {
+                timestamp: new Date().toISOString(),
+                userAgent: navigator.userAgent,
+                url: window.location.href,
+                browser: detectBrowser(),
+                testResults: fixResults,
+                recommendations: generateRecommendations()
+            };
+            
+            const blob = new Blob([JSON.stringify(report, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `vapi-browser-fixes-${Date.now()}.json`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            
+            log('Fix report downloaded', 'success');
+        }
+
+        function generateRecommendations() {
+            const recommendations = [];
+            
+            Object.entries(fixResults).forEach(([category, result]) => {
+                if (result.status === 'needs-fix' || result.fixes.length > 0) {
+                    result.fixes.forEach(fix => {
+                        recommendations.push({
+                            category,
+                            issue: fix,
+                            severity: fix.includes('critical') ? 'high' : fix.includes('warning') ? 'low' : 'medium'
+                        });
+                    });
+                }
+            });
+            
+            return recommendations;
+        }
+
+        // Initialize
+        window.addEventListener('load', () => {
+            log('VAPI Browser Fixes tool initialized');
+            log('Ready to diagnose and fix compatibility issues');
+            
+            // Auto-run basic checks
+            setTimeout(runAllTests, 1000);
+        });
+    </script>
+</body>
+</html>
