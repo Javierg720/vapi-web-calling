@@ -647,46 +647,48 @@
                 document.getElementById('conversationLog').innerHTML = '';
                 addConversationMessage('system', 'Connecting to voice assistant...');
                 
-                // Start VAPI call with built-in OpenAI and custom TTS
+                // Start VAPI call with proper assistant configuration
                 activeCall = await vapi.start({
-                    model: {
-                        provider: "openai",
-                        model: "gpt-4",
-                        messages: [
-                            {
-                                role: "system",
-                                content: "You are a helpful voice assistant. Keep responses concise and conversational. Maximum 2-3 sentences per response."
-                            }
-                        ]
-                    },
-                    voice: {
-                        provider: "custom-voice",
-                        server: {
-                            url: "https://5570b7b65efe.ngrok-free.app/api/synthesize",
-                            secret: "your-webhook-secret",
-                            timeoutSeconds: 60,
-                            headers: {
-                                "Content-Type": "application/json",
-                                "X-Client-ID": "vapi-web-calling"
-                            }
-                        },
-                        fallbackPlan: {
-                            voices: [
+                    assistant: {
+                        model: {
+                            provider: "openai",
+                            model: "gpt-4",
+                            messages: [
                                 {
-                                    provider: "custom-voice",
-                                    server: {
-                                        url: "https://5570b7b65efe.ngrok-free.app/api/synthesize",
-                                        secret: "edge-tts-fallback"
-                                    }
+                                    role: "system",
+                                    content: "You are a helpful voice assistant. Keep responses concise and conversational. Maximum 2-3 sentences per response."
                                 }
                             ]
-                        }
-                    },
-                    firstMessage: "Hello! I'm your voice assistant. How can I help you today?",
-                    recordingEnabled: true,
-                    endCallFunctionEnabled: true,
-                    silenceTimeoutSeconds: 30,
-                    maxDurationSeconds: 600
+                        },
+                        voice: {
+                            provider: "custom-voice",
+                            server: {
+                                url: "https://5570b7b65efe.ngrok-free.app/api/synthesize",
+                                secret: "your-webhook-secret",
+                                timeoutSeconds: 60,
+                                headers: {
+                                    "Content-Type": "application/json",
+                                    "X-Client-ID": "vapi-web-calling"
+                                }
+                            },
+                            fallbackPlan: {
+                                voices: [
+                                    {
+                                        provider: "custom-voice",
+                                        server: {
+                                            url: "https://5570b7b65efe.ngrok-free.app/api/synthesize",
+                                            secret: "your-webhook-secret"
+                                        }
+                                    }
+                                ]
+                            }
+                        },
+                        firstMessage: "Hello! I'm your voice assistant. How can I help you today?",
+                        recordingEnabled: true,
+                        endCallFunctionEnabled: true,
+                        silenceTimeoutSeconds: 30,
+                        maxDurationSeconds: 600
+                    }
                 });
                 
                 console.log('VAPI call started:', activeCall);
