@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VAPI Web Calling - Working Fix</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        button {
+            background-color: #007bff;
+            color: white;
+            padding: 15px 30px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 18px;
+            margin: 10px;
+            width: 200px;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        button:disabled {
+            background-color: #6c757d;
+            cursor: not-allowed;
+        }
+        .status {
+            margin: 20px 0;
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+            font-weight: bold;
+            font-size: 18px;
+        }
+        .status.idle {
+            background: #f8f9fa;
+            color: #6c757d;
+        }
+        .status.connecting {
+            background: #fff3cd;
+            color: #856404;
+        }
+        .status.connected {
+            background: #d4edda;
+            color: #155724;
+        }
+        .status.error {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        .conversation {
+            max-height: 400px;
+            overflow-y: auto;
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 20px 0;
+            border: 1px solid #e9ecef;
+            min-height: 200px;
+        }
+        .message {
+            margin: 10px 0;
+            padding: 10px 15px;
+            border-radius: 8px;
+            line-height: 1.4;
+        }
+        .message.system {
+            background: #e3f2fd;
+            color: #1565c0;
+        }
+        .message.user {
+            background: #e8f5e8;
+            color: #2e7d32;
+        }
+        .message.assistant {
+            background: #f3e5f5;
+            color: #7b1fa2;
+        }
+        .message.error {
+            background: #ffebee;
+            color: #c62828;
+        }
+        .controls {
+            text-align: center;
+            margin: 20px 0;
+        }
+        .debug {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            padding: 15px;
+            margin-top: 20px;
+            font-family: monospace;
+            font-size: 12px;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🌐 VAPI Web Calling - Working Fix</h1>
+        <p style="text-align: center; color: #666;">Uses existing assistant to bypass 400 errors</p>
+        
+        <div id="status" class="status idle">
+            Ready to start call
+        </div>
+        
+        <div class="controls">
+            <button id="startCall" onclick="startWorkingCall()">📞 Start Call</button>
+            <button id="endCall" onclick="endCall()" style="display: none;">📞 End Call</button>
+        </div>
+        
+        <div id="conversation" class="conversation">
+            <div class="message system">Ready to start voice conversation using existing VAPI assistant...</div>
+        </div>
+
+        <div class="debug" id="debug">
+            <strong>🔍 Debug Log:</strong><br>
+            Waiting for user action...
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@vapi-ai/web@2.3.8/dist/vapi.js"></script>
+    <script>
+        let vapi = null;
+        let activeCall = null;
+
+        function updateStatus(text, className) {
+            const status = document.getElementById('status');
+            status.textContent = text;
+            status.className = `status ${className}`;
+        }
+
+        function addMessage(text, type) {
+            const conversation = document.getElementById('conversation');
+            const message = document.createElement('div');
+            message.className = `message ${type}`;
+            message.textContent = `${new Date().toLocaleTimeString()} - ${text}`;
+            conversation.appendChild(message);
+            conversation.scrollTop = conversation.scrollHeight;
+        }
+
+        function debugLog(text) {
+            const debug = document.getElementById('debug');
+            const time = new Date().toLocaleTimeString();
+            debug.innerHTML += `<br>[${time}] ${text}`;
+            debug.scrollTop = debug.scrollHeight;
+        }
+
+        async function startWorkingCall() {
+            try {
+                updateStatus('Initializing VAPI...', 'connecting');
+                addMessage('Starting VAPI with existing assistant...', 'system');
+                debugLog('Checking VAPI SDK...');
+
+                // Check if VAPI SDK loaded
+                if (typeof window.Vapi === 'undefined') {
+                    throw new Error('VAPI SDK not loaded');
+                }
+                debugLog('VAPI SDK loaded successfully');
+
+                // Initialize VAPI
+                vapi = new window.Vapi('445a1e08-666d-47ea-abdd-cc0ac09d23bc');
+                debugLog('VAPI client initialized');
+
+                // Set up event listeners
+                vapi.on('call-start', () => {
+                    updateStatus('Call Active - Listening...', 'connected');
+                    addMessage('Call started successfully!', 'system');
+                    debugLog('Call started event received');
+                });
+
+                vapi.on('call-end', () => {
+                    updateStatus('Call ended', 'idle');
+                    addMessage('Call ended', 'system');
+                    debugLog('Call ended event received');
+                    endCall();
+                });
+
+                vapi.on('error', (error) => {
+                    updateStatus('Error occurred', 'error');
+                    addMessage(`Error: ${error.message}`, 'error');
+                    debugLog(`Error: ${JSON.stringify(error)}`);
+                    console.error('VAPI error:', error);
+                });
+
+                vapi.on('message', (message) => {
+                    debugLog(`Message: ${message.type}`);
+                    console.log('VAPI message:', message);
+                    
+                    if (message.type === 'transcript' && message.transcriptType === 'final') {
+                        addMessage(`You: ${message.transcript}`, 'user');
+                    } else if (message.type === 'conversation-update') {
+                        if (message.conversation && message.conversation.length > 0) {
+                            const lastMessage = message.conversation[message.conversation.length - 1];
+                            if (lastMessage.role === 'assistant') {
+                                addMessage(`Assistant: ${lastMessage.content}`, 'assistant');
+                            }
+                        }
+                    }
+                });
+
+                updateStatus('Starting call...', 'connecting');
+                addMessage('Using existing assistant to avoid 400 errors...', 'system');
+                debugLog('Starting call with assistantId...');
+
+                // Use existing assistant ID to bypass creation
+                activeCall = await vapi.start({
+                    assistantId: "be71a911-b1d7-4a14-ac5b-9cbd6c0eeccb"  // Known working assistant ID
+                });
+
+                console.log('VAPI call started:', activeCall);
+                debugLog('Call started successfully');
+                
+                document.getElementById('startCall').style.display = 'none';
+                document.getElementById('endCall').style.display = 'inline-block';
+
+            } catch (error) {
+                console.error('Failed to start VAPI call:', error);
+                updateStatus('Failed to start call', 'error');
+                addMessage(`Failed to start: ${error.message}`, 'error');
+                debugLog(`Failed to start: ${error.message}`);
+                
+                // Try alternative approach with minimal config
+                if (error.message.includes('400')) {
+                    debugLog('Trying fallback with minimal assistant config...');
+                    try {
+                        activeCall = await vapi.start({
+                            assistant: {
+                                model: {
+                                    provider: "openai",
+                                    model: "gpt-3.5-turbo",
+                                    messages: [
+                                        {
+                                            role: "system",
+                                            content: "You are a helpful voice assistant."
+                                        }
+                                    ]
+                                },
+                                voice: {
+                                    provider: "11labs",
+                                    voiceId: "21m00Tcm4TlvDq8ikWAM"
+                                }
+                            }
+                        });
+                        
+                        debugLog('Fallback succeeded!');
+                        updateStatus('Call Active (Fallback)', 'connected');
+                        addMessage('Connected using fallback configuration', 'system');
+                        
+                        document.getElementById('startCall').style.display = 'none';
+                        document.getElementById('endCall').style.display = 'inline-block';
+                        
+                    } catch (fallbackError) {
+                        debugLog(`Fallback also failed: ${fallbackError.message}`);
+                        throw fallbackError;
+                    }
+                } else {
+                    throw error;
+                }
+            }
+        }
+
+        async function endCall() {
+            try {
+                if (activeCall && vapi) {
+                    await vapi.stop();
+                    debugLog('Call stopped via vapi.stop()');
+                }
+            } catch (error) {
+                console.error('Error ending call:', error);
+                debugLog(`Error ending call: ${error.message}`);
+            }
+            
+            // Reset state
+            activeCall = null;
+            updateStatus('Ready to start call', 'idle');
+            
+            document.getElementById('startCall').style.display = 'inline-block';
+            document.getElementById('endCall').style.display = 'none';
+        }
+
+        // Test SDK loading on page load
+        window.addEventListener('load', () => {
+            if (typeof window.Vapi === 'undefined') {
+                updateStatus('VAPI SDK failed to load', 'error');
+                addMessage('Error: VAPI SDK not loaded from CDN', 'error');
+                debugLog('VAPI SDK not found');
+            } else {
+                addMessage('VAPI SDK loaded successfully', 'system');
+                debugLog('VAPI SDK loaded successfully');
+            }
+        });
+    </script>
+</body>
+</html>
