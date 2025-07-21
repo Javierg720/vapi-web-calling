@@ -177,8 +177,8 @@
                 }
                 debugLog('VAPI SDK loaded successfully');
 
-                // Initialize VAPI
-                vapi = new window.Vapi('445a1e08-666d-47ea-abdd-cc0ac09d23bc');
+                // Initialize VAPI with PUBLIC key for Web SDK
+                vapi = new window.Vapi('16c71f6e-10ce-47b2-b03c-033f3534fc0c');
                 debugLog('VAPI client initialized');
 
                 // Set up event listeners
@@ -222,9 +222,25 @@
                 addMessage('Using existing assistant to avoid 400 errors...', 'system');
                 debugLog('Starting call with assistantId...');
 
-                // Use existing assistant ID to bypass creation
+                // Create transient assistant with public key
                 activeCall = await vapi.start({
-                    assistantId: "be71a911-b1d7-4a14-ac5b-9cbd6c0eeccb"  // Known working assistant ID
+                    assistant: {
+                        model: {
+                            provider: "openai",
+                            model: "gpt-4",
+                            messages: [
+                                {
+                                    role: "system",
+                                    content: "You are a helpful voice assistant. Keep responses concise and conversational."
+                                }
+                            ]
+                        },
+                        voice: {
+                            provider: "11labs",
+                            voiceId: "21m00Tcm4TlvDq8ikWAM"
+                        },
+                        firstMessage: "Hello! I'm your voice assistant. How can I help you today?"
+                    }
                 });
 
                 console.log('VAPI call started:', activeCall);
