@@ -758,6 +758,11 @@ async def llm_test(request: Request):
       - provider: optional temporary override (vapi|local|grok|openai)
       - temperature, max_tokens: optional (currently advisory)
     """
+    # Simple admin guard to prevent unauthorized use/costs
+    admin_key = request.headers.get("x-admin-key")
+    if not admin_key or admin_key != ADMIN_API_KEY:
+        raise HTTPException(status_code=401, detail="Unauthorized")
+
     try:
         data = await request.json()
     except Exception:
